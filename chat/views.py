@@ -10,6 +10,15 @@ from .serializers import (
     MessageSerializer, MessageCreateSerializer,
     MessageResponseSerializer, MessageResponseCreateSerializer
 )
+from .handlers import GeminiHandler
+from base.handlers import ContextHandler
+import logging
+
+logger = logging.getLogger(__name__)
+
+# Initialize handlers
+gemini_handler = GeminiHandler()
+context_handler = ContextHandler()
 
 # Chat Session Views
 class ChatSessionListCreateView(APIView):
@@ -84,7 +93,7 @@ class MessageListCreateView(APIView):
 
     def post(self, request, session_id):
         # Verify session belongs to user
-        get_object_or_404(ChatSession, id=session_id, user=request.user)
+        session = get_object_or_404(ChatSession, id=session_id, user=request.user)
         
         serializer = MessageCreateSerializer(
             data=request.data,
@@ -93,34 +102,50 @@ class MessageListCreateView(APIView):
         if serializer.is_valid():
             message = serializer.save()
             
-            # Here you would typically call your AI service to generate a response
-            # For now, we'll create a mock response
-            response_serializer = MessageResponseCreateSerializer(
-                data={
-                    'response_text': 'This is a mock AI response.',
-                    'response_type': 'text',
-                    'model_name': 'mock-model',
-                    'model_version': '1.0',
-                    'tokens_used': 10,
-                    'processing_time': 0.1,
-                    'confidence_score': 0.95,
-                    'relevance_score': 0.9,
-                    'accuracy_score': 0.85,
-                    'has_code': False,
-                    'has_tables': False,
-                    'has_images': False,
-                    'has_links': False,
-                    'sources_used': [],
-                    'reference_subjects': [],
-                    'reference_topics': []
-                },
-                context={'message_id': message.id}
-            )
-            
-            if response_serializer.is_valid():
-                response_serializer.save()
-                return Response(MessageSerializer(message).data, status=status.HTTP_201_CREATED)
-            
+            try:
+                # Get context for the conversation using the base handler
+                context = context_handler.get_conversation_context(
+                    session=session,
+                    message_model=Message,
+                    response_model=MessageResponse
+                )
+                
+                # Generate response using Gemini
+                ai_response = gemini_handler.generate_response(
+                    message=message.content,
+                    context=context
+                )
+                
+                # Create response object
+                response_serializer = MessageResponseCreateSerializer(
+                    data={
+                        'response_text': ai_response['text'],
+                        'metadata': ai_response.get('metadata', {}),
+                        'status': ai_response.get('status', 'success')
+                    },
+                    context={'message_id': message.id}
+                )
+                
+                if response_serializer.is_valid():
+                    response_serializer.save()
+                    return Response({
+                        'message': MessageSerializer(message).data,
+                        'response': response_serializer.data
+                    }, status=status.HTTP_201_CREATED)
+                else:
+                    logger.error(f"Response serializer errors: {response_serializer.errors}")
+                    return Response(
+                        response_serializer.errors,
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+                    
+            except Exception as e:
+                logger.error(f"Error generating AI response: {str(e)}")
+                return Response(
+                    {'error': 'Failed to generate AI response'},
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                )
+                
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class MessageDetailView(APIView):

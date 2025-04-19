@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tutor AI - Ask Your Doubt</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Caveat:wght@400;600&display=swap" rel="stylesheet">
+    <link href="./styles.css" rel="stylesheet">
+</head>
+<body class="bg-notebook min-h-screen font-inter">
+    <!-- Header Section -->
+    <header class="bg-white shadow-md p-4 md:p-6">
+        <div class="container mx-auto">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-2xl md:text-3xl font-bold text-chalkboard">👋 Welcome back, Ayush!</h1>
+                    <p class="text-gray-600 mt-1">Tip of the Day: Read the Hindu editorial daily.</p>
+                </div>
+                <div id="tutor-avatar" class="w-16 h-16 md:w-20 md:h-20"></div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Chat Section -->
+    <main class="container mx-auto p-4 md:p-6 flex flex-col md:flex-row gap-6">
+        <!-- Chat Window -->
+        <div class="flex-1 bg-white rounded-lg shadow-chalkboard overflow-hidden flex flex-col h-[calc(100vh-12rem)]">
+            <!-- Chat Messages -->
+            <div class="flex-1 overflow-y-auto p-4 space-y-4" id="chat-messages">
+                <!-- Tutor Message -->
+                <div class="flex items-start space-x-3">
+                    <div class="flex-shrink-0">
+                        <div class="w-8 h-8 bg-tutor-light rounded-full flex items-center justify-center">
+                            👨‍🏫
+                        </div>
+                    </div>
+                    <div class="flex-1">
+                        <div class="bg-tutor-light rounded-lg p-4 max-w-[80%]">
+                            <div class="text-sm text-tutor-dark font-medium mb-1">History</div>
+                            <p class="text-chalkboard">Hello! How can I help you today? Feel free to ask any questions about your studies.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Student Message -->
+                <div class="flex items-start justify-end space-x-3">
+                    <div class="flex-1">
+                        <div class="bg-student-light rounded-lg p-4 max-w-[80%] ml-auto">
+                            <div class="text-sm text-student-dark font-medium mb-1">Current Affairs</div>
+                            <p class="text-chalkboard">Can you explain the recent changes in India's foreign policy?</p>
+                        </div>
+                    </div>
+                    <div class="flex-shrink-0">
+                        <div class="w-8 h-8 bg-student-light rounded-full flex items-center justify-center">
+                            ✋
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tutor Message -->
+                <div class="flex items-start space-x-3">
+                    <div class="flex-shrink-0">
+                        <div class="w-8 h-8 bg-tutor-light rounded-full flex items-center justify-center">
+                            👨‍🏫
+                        </div>
+                    </div>
+                    <div class="flex-1">
+                        <div class="bg-tutor-light rounded-lg p-4 max-w-[80%]">
+                            <div class="text-sm text-tutor-dark font-medium mb-1">International Relations</div>
+                            <p class="text-chalkboard">India's foreign policy has seen significant evolution in recent years, particularly in its approach to multilateralism and regional cooperation...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Input Bar -->
+            <div class="border-t p-4 bg-white">
+                <div class="flex items-center space-x-4">
+                    <button class="text-gray-500 hover:text-accent-blue transition-colors">
+                        <span class="text-2xl">🎤</span>
+                    </button>
+                    <input type="text" 
+                           placeholder="Ask your doubt..." 
+                           class="flex-1 border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-accent-blue">
+                    <button class="bg-accent-blue text-white rounded-lg px-6 py-2 hover:bg-accent-blue/90 transition-colors flex items-center space-x-2">
+                        <span>Send</span>
+                        <span class="text-xl">✋</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar / Notebook -->
+        <div class="hidden md:block w-80 bg-white rounded-lg shadow-chalkboard p-4">
+            <h2 class="text-xl font-bold text-chalkboard mb-4">Your Notebook</h2>
+            
+            <!-- Topic Filters -->
+            <div class="mb-6">
+                <h3 class="text-sm font-medium text-gray-600 mb-2">Topics</h3>
+                <div class="flex flex-wrap gap-2">
+                    <span class="px-3 py-1 bg-accent-blue/10 text-accent-blue rounded-full text-sm">History</span>
+                    <span class="px-3 py-1 bg-accent-green/10 text-accent-green rounded-full text-sm">Current Affairs</span>
+                    <span class="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-sm">Geography</span>
+                    <span class="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-sm">Economics</span>
+                </div>
+            </div>
+
+            <!-- Past Questions -->
+            <div class="space-y-4">
+                <h3 class="text-sm font-medium text-gray-600 mb-2">Recent Questions</h3>
+                <div class="space-y-3">
+                    <div class="p-3 bg-notebook rounded-lg">
+                        <p class="text-sm text-chalkboard">What were the key events of the Indian Independence Movement?</p>
+                        <span class="text-xs text-gray-500">2 hours ago</span>
+                    </div>
+                    <div class="p-3 bg-notebook rounded-lg">
+                        <p class="text-sm text-chalkboard">Explain the concept of Federalism in India.</p>
+                        <span class="text-xs text-gray-500">Yesterday</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
+    <script src="./main.js"></script>
+</body>
+</html> 

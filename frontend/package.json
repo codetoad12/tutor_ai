@@ -1,0 +1,20 @@
+{
+  "name": "tutor-ai-frontend",
+  "version": "1.0.0",
+  "description": "Frontend for Tutor AI - A classroom-inspired chat interface",
+  "main": "index.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "lottie-web": "^5.12.2"
+  },
+  "devDependencies": {
+    "autoprefixer": "^10.4.17",
+    "postcss": "^8.4.35",
+    "tailwindcss": "^3.4.1",
+    "vite": "^4.5.2"
+  }
+}
