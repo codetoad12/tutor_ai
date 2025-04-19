@@ -2,25 +2,89 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Custom Scrollbar */
+/* Custom scrollbar styles */
 ::-webkit-scrollbar {
     width: 6px;
 }
 
 ::-webkit-scrollbar-track {
     background: #f1f1f1;
+    border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb {
-    background: #cbd5e0;
+    background: #888;
     border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: #a0aec0;
+    background: #555;
 }
 
-/* Message Animations */
+/* Message styles */
+.message {
+    @apply flex items-start space-x-3 opacity-0 animate-[slideIn_0.3s_ease-out_forwards];
+}
+
+.message-bubble {
+    @apply rounded-lg p-4 max-w-[80%];
+}
+
+.student-message {
+    @apply flex-row-reverse space-x-reverse;
+}
+
+.student-message .message-bubble {
+    @apply bg-student-light text-student-dark;
+}
+
+.tutor-message .message-bubble {
+    @apply bg-tutor-light text-tutor-dark;
+}
+
+.avatar {
+    @apply w-8 h-8 rounded-full flex items-center justify-center text-lg;
+}
+
+.student-message .avatar {
+    @apply bg-student-light;
+}
+
+.tutor-message .avatar {
+    @apply bg-tutor-light;
+}
+
+/* Typing indicator */
+.typing-indicator {
+    @apply flex items-start space-x-3;
+}
+
+.typing-bubble {
+    @apply bg-tutor-light rounded-lg p-4 flex space-x-1;
+}
+
+.dot {
+    @apply w-2 h-2 bg-tutor-dark rounded-full;
+    animation: bounce 1.4s infinite;
+}
+
+.dot:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.dot:nth-child(3) {
+    animation-delay: 0.4s;
+}
+
+@keyframes bounce {
+    0%, 60%, 100% {
+        transform: translateY(0);
+    }
+    30% {
+        transform: translateY(-4px);
+    }
+}
+
 @keyframes slideIn {
     from {
         opacity: 0;
@@ -32,45 +96,14 @@
     }
 }
 
-.message-animation {
-    animation: slideIn 0.3s ease-out forwards;
+/* Error message */
+.error-message {
+    @apply bg-red-100 text-red-700 p-4 rounded-lg text-center my-2;
 }
 
-/* Typing Indicator */
-.typing-indicator {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-}
-
-.typing-indicator span {
-    width: 8px;
-    height: 8px;
-    background: #cbd5e0;
-    border-radius: 50%;
-    animation: typing 1s infinite ease-in-out;
-}
-
-.typing-indicator span:nth-child(2) {
-    animation-delay: 0.2s;
-}
-
-.typing-indicator span:nth-child(3) {
-    animation-delay: 0.4s;
-}
-
-@keyframes typing {
-    0%, 100% {
-        transform: translateY(0);
-    }
-    50% {
-        transform: translateY(-4px);
-    }
-}
-
-/* Mobile Responsive Adjustments */
-@media (max-width: 768px) {
-    .chat-container {
-        height: calc(100vh - 8rem);
+/* Mobile responsiveness */
+@media (max-width: 640px) {
+    .chat-messages {
+        height: calc(100vh - 180px);
     }
 } 

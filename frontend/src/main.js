@@ -1,115 +1,167 @@
+import { apiService } from './services/api.js';
+import { authService } from './services/auth.js';
+import lottie from 'lottie-web';
+
+// Check if user is authenticated
+if (!authService.isAuthenticated()) {
+    window.location.href = 'login.html';
+}
+
 // DOM Elements
-const chatMessages = document.getElementById('chat-messages');
-const messageInput = document.querySelector('input[type="text"]');
-const sendButton = document.querySelector('button:last-child');
-const tutorAvatar = document.getElementById('tutor-avatar');
+const chatMessages = document.querySelector('.chat-messages');
+const messageInput = document.querySelector('.message-input');
+const sendButton = document.querySelector('.send-button');
+const tutorAvatar = document.querySelector('.tutor-avatar');
+const logoutButton = document.querySelector('.logout-button');
+const userNameDisplay = document.querySelector('.user-name');
 
-// Mock data for demonstration
-const mockResponses = [
-    "That's a great question! Let me explain...",
-    "I understand your doubt. Here's what you need to know...",
-    "Let me break this down for you...",
-    "This is an important concept. Here's the explanation..."
-];
+// State management
+let currentSessionId = null;
+let isProcessing = false;
 
-// Initialize Lottie animation for tutor avatar
-let tutorAnimation;
-lottie.loadAnimation({
-    container: tutorAvatar,
-    renderer: 'svg',
-    loop: true,
-    autoplay: true,
-    path: 'https://assets2.lottiefiles.com/packages/lf20_xyadoh9h.json' // Replace with your tutor animation
-});
-
-// Function to create a message element
-function createMessageElement(content, isStudent = false, subject = 'General') {
-    const messageDiv = document.createElement('div');
-    messageDiv.className = `flex items-start space-x-3 ${isStudent ? 'justify-end' : ''} message-animation`;
-    
-    const avatar = isStudent ? '✋' : '👨‍🏫';
-    const bgColor = isStudent ? 'bg-student-light' : 'bg-tutor-light';
-    const textColor = isStudent ? 'text-student-dark' : 'text-tutor-dark';
-    
-    messageDiv.innerHTML = `
-        ${!isStudent ? `
-            <div class="flex-shrink-0">
-                <div class="w-8 h-8 ${bgColor} rounded-full flex items-center justify-center">
-                    ${avatar}
-                </div>
-            </div>
-        ` : ''}
-        <div class="flex-1 ${isStudent ? 'text-right' : ''}">
-            <div class="${bgColor} rounded-lg p-4 max-w-[80%] ${isStudent ? 'ml-auto' : ''}">
-                <div class="text-sm ${textColor} font-medium mb-1">${subject}</div>
-                <p class="text-chalkboard">${content}</p>
-            </div>
-        </div>
-        ${isStudent ? `
-            <div class="flex-shrink-0">
-                <div class="w-8 h-8 ${bgColor} rounded-full flex items-center justify-center">
-                    ${avatar}
-                </div>
-            </div>
-        ` : ''}
-    `;
-    
-    return messageDiv;
+// Set user name in header
+const user = authService.getUser();
+if (user && userNameDisplay) {
+    userNameDisplay.textContent = user.username || 'Student';
 }
 
-// Function to show typing indicator
+// Initialize the chat interface
+async function initializeChat() {
+    try {
+        // Create a new session or get the latest one
+        const sessions = await apiService.getSessions();
+        if (sessions.length > 0) {
+            currentSessionId = sessions[0].id;
+            loadMessages(currentSessionId);
+        } else {
+            const newSession = await apiService.createSession('New Chat Session');
+            currentSessionId = newSession.id;
+        }
+    } catch (error) {
+        console.error('Failed to initialize chat:', error);
+        showError('Failed to connect to the chat service');
+    }
+}
+
+// Load existing messages
+async function loadMessages(sessionId) {
+    try {
+        const messages = await apiService.getMessages(sessionId);
+        messages.forEach(message => {
+            appendMessage(message.content, 'student');
+            if (message.response) {
+                appendMessage(message.response.response_text, 'tutor');
+            }
+        });
+        scrollToBottom();
+    } catch (error) {
+        console.error('Failed to load messages:', error);
+        showError('Failed to load chat history');
+    }
+}
+
+// Create and append a message element
+function appendMessage(content, sender) {
+    const messageElement = document.createElement('div');
+    messageElement.classList.add('message', `${sender}-message`);
+    
+    const avatar = document.createElement('div');
+    avatar.classList.add('avatar');
+    avatar.innerHTML = sender === 'tutor' ? '🤖' : '👤';
+    
+    const bubble = document.createElement('div');
+    bubble.classList.add('message-bubble');
+    bubble.textContent = content;
+    
+    messageElement.appendChild(avatar);
+    messageElement.appendChild(bubble);
+    chatMessages.appendChild(messageElement);
+    
+    scrollToBottom();
+}
+
+// Show typing indicator
 function showTypingIndicator() {
-    const typingDiv = document.createElement('div');
-    typingDiv.className = 'flex items-start space-x-3 message-animation';
-    typingDiv.innerHTML = `
-        <div class="flex-shrink-0">
-            <div class="w-8 h-8 bg-tutor-light rounded-full flex items-center justify-center">
-                👨‍🏫
-            </div>
-        </div>
-        <div class="flex-1">
-            <div class="bg-tutor-light rounded-lg p-4 max-w-[80%]">
-                <div class="typing-indicator">
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                </div>
-            </div>
+    const indicator = document.createElement('div');
+    indicator.classList.add('typing-indicator');
+    indicator.innerHTML = `
+        <div class="typing-bubble">
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
         </div>
     `;
-    chatMessages.appendChild(typingDiv);
-    chatMessages.scrollTop = chatMessages.scrollHeight;
-    return typingDiv;
+    chatMessages.appendChild(indicator);
+    scrollToBottom();
 }
 
-// Function to handle sending messages
-function handleSendMessage() {
+// Remove typing indicator
+function removeTypingIndicator() {
+    const indicator = document.querySelector('.typing-indicator');
+    if (indicator) {
+        indicator.remove();
+    }
+}
+
+// Handle sending messages
+async function handleSendMessage() {
+    if (!messageInput.value.trim() || isProcessing || !currentSessionId) return;
+    
     const content = messageInput.value.trim();
-    if (!content) return;
-
-    // Add student message
-    const studentMessage = createMessageElement(content, true, 'Current Affairs');
-    chatMessages.appendChild(studentMessage);
     messageInput.value = '';
+    isProcessing = true;
+    
+    try {
+        appendMessage(content, 'student');
+        showTypingIndicator();
+        
+        const response = await apiService.sendMessage(currentSessionId, content);
+        removeTypingIndicator();
+        
+        if (response.response) {
+            appendMessage(response.response.response_text, 'tutor');
+        }
+    } catch (error) {
+        console.error('Failed to send message:', error);
+        showError('Failed to send message');
+        removeTypingIndicator();
+    } finally {
+        isProcessing = false;
+    }
+}
+
+// Show error message
+function showError(message) {
+    const errorElement = document.createElement('div');
+    errorElement.classList.add('error-message');
+    errorElement.textContent = message;
+    chatMessages.appendChild(errorElement);
+    setTimeout(() => errorElement.remove(), 5000);
+}
+
+// Scroll chat to bottom
+function scrollToBottom() {
     chatMessages.scrollTop = chatMessages.scrollHeight;
+}
 
-    // Show typing indicator
-    const typingIndicator = showTypingIndicator();
-
-    // Simulate AI response after delay
-    setTimeout(() => {
-        typingIndicator.remove();
-        const response = mockResponses[Math.floor(Math.random() * mockResponses.length)];
-        const tutorMessage = createMessageElement(response, false, 'History');
-        chatMessages.appendChild(tutorMessage);
-        chatMessages.scrollTop = chatMessages.scrollHeight;
-    }, 2000);
+// Handle logout
+function handleLogout() {
+    authService.logout();
+    window.location.href = 'login.html';
 }
 
 // Event Listeners
 sendButton.addEventListener('click', handleSendMessage);
 messageInput.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') {
+    if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
         handleSendMessage();
     }
-}); 
+});
+
+if (logoutButton) {
+    logoutButton.addEventListener('click', handleLogout);
+}
+
+// Initialize the chat
+initializeChat(); 
