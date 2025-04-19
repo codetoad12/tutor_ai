@@ -13,6 +13,8 @@ from .serializers import (
 from .handlers import GeminiHandler
 from base.handlers import ContextHandler
 import logging
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import AllowAny
 
 logger = logging.getLogger(__name__)
 
@@ -207,3 +209,15 @@ class MessageResponseListView(APIView):
         )
         serializer = MessageResponseSerializer(response)
         return Response(serializer.data)
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def health_check(request):
+    """
+    A simple health check endpoint to verify the API is running.
+    """
+    return Response({
+        'status': 'ok',
+        'message': 'API is running',
+        'version': '1.0.0'
+    })

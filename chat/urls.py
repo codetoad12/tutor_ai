@@ -16,4 +16,5 @@ urlpatterns = [
     
     # Message Response URLs
     path('messages/<int:message_id>/response/', views.MessageResponseListView.as_view(), name='message-response'),
+    path('health/', views.health_check, name='health_check'),
 ] 

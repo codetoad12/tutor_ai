@@ -45,12 +45,25 @@ class ApiService {
     }
 
     async sendMessage(sessionId, content) {
-        const response = await fetch(`${this.baseUrl}/chat/sessions/${sessionId}/messages/`, {
-            method: 'POST',
-            headers: this.getHeaders(),
-            body: JSON.stringify({ content })
-        });
-        return this.handleResponse(response);
+        console.log(`Sending message to session ${sessionId}:`, content);
+        console.log('API URL:', `${this.baseUrl}/chat/sessions/${sessionId}/messages/`);
+        console.log('Headers:', this.getHeaders());
+        
+        try {
+            const response = await fetch(`${this.baseUrl}/chat/sessions/${sessionId}/messages/`, {
+                method: 'POST',
+                headers: this.getHeaders(),
+                body: JSON.stringify({ content })
+            });
+            
+            console.log('Response status:', response.status);
+            const data = await this.handleResponse(response);
+            console.log('Response data:', data);
+            return data;
+        } catch (error) {
+            console.error('Error in sendMessage:', error);
+            throw error;
+        }
     }
 
     async provideFeedback(messageId, feedback, feedbackText = '') {

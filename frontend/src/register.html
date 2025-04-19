@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tutor AI - Register</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📚</text></svg>">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="styles.css" rel="stylesheet">
 </head>
@@ -15,16 +16,14 @@
         </div>
 
         <form id="registerForm" class="space-y-6">
-            <div>
-                <label for="username" class="block text-sm font-medium text-gray-700 mb-1">Username</label>
-                <input type="text" id="username" name="username" required
-                    class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-accent-blue focus:border-accent-blue">
+            <div class="mb-4">
+                <label for="username" class="block text-sm font-medium text-gray-700">Username</label>
+                <input type="text" id="username" name="username" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                <p class="mt-1 text-sm text-gray-500">Either username or email is required</p>
             </div>
-
-            <div>
-                <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                <input type="email" id="email" name="email" required
-                    class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-accent-blue focus:border-accent-blue">
+            <div class="mb-4">
+                <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
+                <input type="email" id="email" name="email" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
             </div>
 
             <div>
@@ -69,29 +68,28 @@
 
     <script type="module">
         import { authService } from './services/auth.js';
-
-        const registerForm = document.getElementById('registerForm');
-        const errorMessage = document.getElementById('errorMessage');
-
-        registerForm.addEventListener('submit', async (e) => {
+        
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            errorMessage.classList.add('hidden');
-
+            
             const formData = {
                 username: document.getElementById('username').value,
                 email: document.getElementById('email').value,
-                first_name: document.getElementById('firstName').value,
-                last_name: document.getElementById('lastName').value,
                 password: document.getElementById('password').value,
                 password2: document.getElementById('confirmPassword').value
             };
+
+            // Validate that either username or email is provided
+            if (!formData.username && !formData.email) {
+                alert('Please provide either a username or email');
+                return;
+            }
 
             try {
                 await authService.register(formData);
                 window.location.href = '/login.html';
             } catch (error) {
-                errorMessage.textContent = error.message;
-                errorMessage.classList.remove('hidden');
+                alert(error.message || 'Registration failed');
             }
         });
     </script>

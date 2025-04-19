@@ -3,18 +3,46 @@ const API_URL = 'http://localhost:8000/api';
 
 class AuthService {
     constructor() {
-        this.token = localStorage.getItem('token');
-        this.user = JSON.parse(localStorage.getItem('user'));
+        try {
+            // Safely get token from localStorage
+            this.token = localStorage.getItem('token');
+            if (this.token === null || this.token === undefined) {
+                this.token = null;
+            }
+            
+            // Safely get user from localStorage
+            const userStr = localStorage.getItem('user');
+            if (userStr === null || userStr === undefined || userStr === '') {
+                this.user = null;
+            } else {
+                try {
+                    this.user = JSON.parse(userStr);
+                } catch (e) {
+                    console.error('Error parsing user data from localStorage:', e);
+                    this.user = null;
+                    // Clean up invalid data
+                    localStorage.removeItem('user');
+                }
+            }
+        } catch (e) {
+            console.error('Error initializing AuthService:', e);
+            this.token = null;
+            this.user = null;
+        }
     }
 
-    async login(email, password) {
+    async login(username, password) {
         try {
+            // Determine if the input is an email or username
+            const isEmail = username.includes('@');
+            const loginData = isEmail ? { email: username, password } : { username, password };
+
             const response = await fetch(`${API_URL}/auth/token/`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ email, password }),
+                body: JSON.stringify(loginData),
             });
 
             if (!response.ok) {
@@ -31,18 +59,23 @@ class AuthService {
 
             return data;
         } catch (error) {
-            throw new Error(error.message || 'Login failed');
+            throw error;
         }
     }
 
-    async register(formData) {
+    async register(userData) {
         try {
+            // Validate that either username or email is provided
+            if (!userData.username && !userData.email) {
+                throw new Error('Either username or email is required');
+            }
+
             const response = await fetch(`${API_URL}/auth/register/`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(formData),
+                body: JSON.stringify(userData)
             });
 
             if (!response.ok) {
@@ -52,7 +85,7 @@ class AuthService {
 
             return await response.json();
         } catch (error) {
-            throw new Error(error.message || 'Registration failed');
+            throw error;
         }
     }
 
@@ -79,10 +112,15 @@ class AuthService {
     // Get authentication headers for API requests
     getAuthHeaders() {
         const token = this.getToken();
-        return {
+        console.log('Getting auth headers, token:', token ? 'Present' : 'Missing');
+        
+        const headers = {
             'Content-Type': 'application/json',
             'Authorization': token ? `Bearer ${token}` : '',
         };
+        
+        console.log('Auth headers:', headers);
+        return headers;
     }
 }
 
