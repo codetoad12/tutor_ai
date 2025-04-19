@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'base.apps.BaseConfig',
     'users.apps.UsersConfig',
     'upsc.apps.UpscConfig',
+    'chat.apps.ChatConfig',
 ]
 
 MIDDLEWARE = [
