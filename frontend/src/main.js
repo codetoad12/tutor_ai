@@ -3,6 +3,9 @@ import { authService } from './services/auth.js';
 import { debugChatUI } from './debug.js';
 import lottie from 'lottie-web';
 
+// Constants for localStorage
+const SESSION_ID_KEY = 'tutor_ai_current_session';
+
 // Check if Django server is running
 async function checkDjangoServer() {
     console.log('Checking Django server...');
@@ -61,31 +64,72 @@ if (user && userNameDisplay) {
 // Initialize the chat interface
 async function initializeChat() {
     try {
-        // Create a new session or get the latest one
+        // Try to get existing session ID from localStorage
+        const savedSessionId = localStorage.getItem(SESSION_ID_KEY);
+        
+        // Get current active sessions from the backend
         const sessions = await apiService.getSessions();
-        if (sessions.length > 0) {
+        console.log('Available sessions:', sessions);
+        
+        if (savedSessionId && sessions.some(session => session.id === savedSessionId)) {
+            // If we have a saved ID and it exists in the backend
+            currentSessionId = savedSessionId;
+            console.log('Using saved session ID:', currentSessionId);
+        } else if (sessions.length > 0) {
+            // Use the most recent session from the backend
             currentSessionId = sessions[0].id;
-            loadMessages(currentSessionId);
+            console.log('Using most recent session from backend:', currentSessionId);
         } else {
+            // Create a new session if none exists
+            console.log('Creating new session...');
             const newSession = await apiService.createSession('New Chat Session');
             currentSessionId = newSession.id;
+            console.log('Created new session:', currentSessionId);
         }
+        
+        // Save the current session ID to localStorage
+        localStorage.setItem(SESSION_ID_KEY, currentSessionId);
+        
+        // Load messages for this session
+        await loadMessagesForSession(currentSessionId);
     } catch (error) {
         console.error('Failed to initialize chat:', error);
         showError('Failed to connect to the chat service');
     }
 }
 
-// Load existing messages
-async function loadMessages(sessionId) {
+// Load messages for a specific session
+async function loadMessagesForSession(sessionId) {
     try {
+        // Clear existing messages
+        chatMessages.innerHTML = '';
+        
+        // Get messages from API
         const messages = await apiService.getMessages(sessionId);
-        messages.forEach(message => {
-            appendMessage(message.content, 'student');
-            if (message.response) {
-                appendMessage(message.response.response_text, 'tutor');
-            }
-        });
+        console.log('Loaded messages from API:', messages.length);
+        
+        if (messages.length === 0) {
+            // Add welcome message if no messages exist
+            const welcomeElement = document.createElement('div');
+            welcomeElement.classList.add('welcome-message');
+            welcomeElement.innerHTML = `
+                <h3>Welcome to AI Tutor!</h3>
+                <p>Ask any question about UPSC exam preparation.</p>
+            `;
+            chatMessages.appendChild(welcomeElement);
+        } else {
+            // Display messages in the order they were received from the API
+            messages.forEach(message => {
+                // Add user message
+                appendMessage(message.content, 'student', false);
+                
+                // Add AI response if available
+                if (message.response) {
+                    appendMessage(message.response.response_text, 'tutor', false);
+                }
+            });
+        }
+        
         scrollToBottom();
     } catch (error) {
         console.error('Failed to load messages:', error);
@@ -94,7 +138,7 @@ async function loadMessages(sessionId) {
 }
 
 // Create and append a message element
-function appendMessage(content, sender) {
+function appendMessage(content, sender, saveToLocalStorage = true) {
     const messageElement = document.createElement('div');
     messageElement.classList.add('message', `${sender}-message`);
     
@@ -139,9 +183,6 @@ function removeTypingIndicator() {
 // Handle sending messages
 async function handleSendMessage() {
     console.log('handleSendMessage called');
-    console.log('Message input value:', messageInput.value);
-    console.log('Is processing:', isProcessing);
-    console.log('Current session ID:', currentSessionId);
     
     if (!messageInput.value.trim() || isProcessing || !currentSessionId) {
         console.log('Message not sent:', {
@@ -157,23 +198,25 @@ async function handleSendMessage() {
     isProcessing = true;
     
     try {
-        console.log('Appending student message to UI');
+        // Add user message to UI
         appendMessage(content, 'student');
-        console.log('Showing typing indicator');
+        
+        // Show typing indicator
         showTypingIndicator();
         
-        console.log('Sending message to API:', content);
-        const response = await apiService.sendMessage(currentSessionId, content);
-        console.log('API response received:', response);
+        // Send to backend API
+        console.log('Sending message to session:', currentSessionId);
+        const message = await apiService.sendMessage(currentSessionId, content);
+        console.log('API response:', message);
         
-        console.log('Removing typing indicator');
+        // Remove typing indicator
         removeTypingIndicator();
         
-        if (response.response) {
-            console.log('Appending tutor response to UI');
-            appendMessage(response.response.response_text, 'tutor');
+        // Add AI response if available
+        if (message.response) {
+            appendMessage(message.response.response_text, 'tutor');
         } else {
-            console.log('No response in API response');
+            console.log('No AI response in the message');
         }
     } catch (error) {
         console.error('Failed to send message:', error);
@@ -201,42 +244,60 @@ function scrollToBottom() {
 // Handle logout
 function handleLogout() {
     authService.logout();
+    localStorage.removeItem(SESSION_ID_KEY);
     window.location.href = 'login.html';
 }
 
-// Event Listeners
-console.log('Setting up event listeners...');
-console.log('Send button element:', sendButton);
+// Start a new chat session
+async function startNewChat() {
+    try {
+        // Confirm with the user
+        if (!confirm('Start a new chat? This will begin a new conversation.')) {
+            return;
+        }
+        
+        // Create new session
+        const newSession = await apiService.createSession('New Chat Session');
+        currentSessionId = newSession.id;
+        
+        // Save the session ID
+        localStorage.setItem(SESSION_ID_KEY, currentSessionId);
+        
+        // Clear messages
+        chatMessages.innerHTML = '';
+        
+        console.log('Started new chat session:', currentSessionId);
+    } catch (error) {
+        console.error('Failed to start new chat:', error);
+        showError('Failed to start a new chat');
+    }
+}
 
+// Event Listeners
 if (sendButton) {
     sendButton.addEventListener('click', () => {
         console.log('Send button clicked');
         handleSendMessage();
     });
 } else {
-    console.error('Send button element not found!');
-    // Try to find the send button again
-    const sendButtonRetry = document.querySelector('.send-button');
-    console.log('Retry finding send button:', sendButtonRetry);
-    if (sendButtonRetry) {
-        sendButtonRetry.addEventListener('click', () => {
-            console.log('Send button clicked (retry)');
-            handleSendMessage();
-        });
-    }
+    console.error('Send button not found!');
 }
 
-messageInput.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-        e.preventDefault();
-        console.log('Enter key pressed in message input');
-        handleSendMessage();
-    }
-});
+if (messageInput) {
+    messageInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            handleSendMessage();
+        }
+    });
+}
 
 if (logoutButton) {
     logoutButton.addEventListener('click', handleLogout);
 }
+
+// New chat button (if it exists)
+document.getElementById('newChatBtn')?.addEventListener('click', startNewChat);
 
 // Initialize the chat
 initializeChat(); 

@@ -89,7 +89,7 @@ class MessageListCreateView(APIView):
         messages = Message.objects.filter(
             session_id=session_id,
             session__user=request.user
-        ).order_by('-created_at')
+        ).order_by('created_at')
         serializer = MessageSerializer(messages, many=True)
         return Response(serializer.data)
 
@@ -119,21 +119,30 @@ class MessageListCreateView(APIView):
                 )
                 
                 # Create response object
+                response_data = {
+                    'response_text': ai_response['text'],
+                    'model_name': 'gemini-1.5-pro'
+                }
+                
+                # Add optional fields if they exist
+                if 'metadata' in ai_response:
+                    response_data['model_version'] = ai_response.get('metadata', {}).get('model', '')
+                if 'status' in ai_response and ai_response['status'] == 'error':
+                    response_data['confidence_score'] = 0.0
+                
                 response_serializer = MessageResponseCreateSerializer(
-                    data={
-                        'response_text': ai_response['text'],
-                        'metadata': ai_response.get('metadata', {}),
-                        'status': ai_response.get('status', 'success')
-                    },
+                    data=response_data,
                     context={'message_id': message.id}
                 )
                 
                 if response_serializer.is_valid():
-                    response_serializer.save()
-                    return Response({
-                        'message': MessageSerializer(message).data,
-                        'response': response_serializer.data
-                    }, status=status.HTTP_201_CREATED)
+                    response_obj = response_serializer.save()
+                    
+                    # Reload message to include the newly created response
+                    message_refreshed = Message.objects.get(id=message.id)
+                    serialized_message = MessageSerializer(message_refreshed).data
+                    
+                    return Response(serialized_message, status=status.HTTP_201_CREATED)
                 else:
                     logger.error(f"Response serializer errors: {response_serializer.errors}")
                     return Response(
@@ -144,7 +153,7 @@ class MessageListCreateView(APIView):
             except Exception as e:
                 logger.error(f"Error generating AI response: {str(e)}")
                 return Response(
-                    {'error': 'Failed to generate AI response'},
+                    {'error': 'Failed to generate AI response', 'details': str(e)},
                     status=status.HTTP_500_INTERNAL_SERVER_ERROR
                 )
                 
@@ -174,7 +183,7 @@ class MessageFeedbackView(APIView):
 
     def post(self, request, pk):
         message = self.get_object(pk)
-        response = message.response
+        response = message.ai_response
         
         if not response:
             return Response(
@@ -183,11 +192,11 @@ class MessageFeedbackView(APIView):
             )
         
         feedback = request.data.get('feedback')
-        feedback_text = request.data.get('feedback_text')
+        feedback_notes = request.data.get('feedback_notes')
         
         if feedback:
             response.user_feedback = feedback
-            response.feedback_text = feedback_text
+            response.feedback_notes = feedback_notes
             response.save()
             
             return Response(MessageResponseSerializer(response).data)

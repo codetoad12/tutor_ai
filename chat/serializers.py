@@ -10,7 +10,7 @@ class MessageResponseSerializer(serializers.ModelSerializer):
             'tokens_used', 'processing_time', 'confidence_score', 'relevance_score',
             'accuracy_score', 'has_code', 'has_tables', 'has_images', 'has_links',
             'sources_used', 'reference_subjects', 'reference_topics', 'user_feedback',
-            'feedback_text', 'created_at', 'updated_at'
+            'feedback_notes', 'created_at', 'updated_at'
         ]
         read_only_fields = [
             'id', 'model_name', 'model_version', 'tokens_used', 'processing_time',
@@ -19,7 +19,7 @@ class MessageResponseSerializer(serializers.ModelSerializer):
         ]
 
 class MessageSerializer(serializers.ModelSerializer):
-    response = MessageResponseSerializer(read_only=True)
+    response = MessageResponseSerializer(source='ai_response', read_only=True)
     
     class Meta:
         model = Message
