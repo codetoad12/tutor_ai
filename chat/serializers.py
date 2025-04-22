@@ -24,10 +24,10 @@ class MessageSerializer(serializers.ModelSerializer):
     class Meta:
         model = Message
         fields = [
-            'id', 'session', 'content', 'message_type', 'is_ai_message',
+            'id', 'session', 'content', 'message_type',
             'response', 'created_at', 'updated_at'
         ]
-        read_only_fields = ['id', 'session', 'is_ai_message', 'created_at', 'updated_at']
+        read_only_fields = ['id', 'session', 'created_at', 'updated_at']
 
 class ChatSessionSerializer(serializers.ModelSerializer):
     messages = MessageSerializer(many=True, read_only=True)
@@ -53,7 +53,6 @@ class ChatSessionCreateSerializer(serializers.ModelSerializer):
         fields = ['title', 'exam_type', 'subject_type']
     
     def create(self, validated_data):
-        validated_data['user'] = self.context['request'].user
         return super().create(validated_data)
 
 class MessageCreateSerializer(serializers.ModelSerializer):
@@ -64,7 +63,7 @@ class MessageCreateSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         session_id = self.context['session_id']
         validated_data['session_id'] = session_id
-        validated_data['is_ai_message'] = False
+        validated_data['message_type'] = validated_data.get('message_type', 'user_query')
         return super().create(validated_data)
 
 class MessageResponseCreateSerializer(serializers.ModelSerializer):
