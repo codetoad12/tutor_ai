@@ -2,9 +2,19 @@ import { apiService } from './services/api.js';
 import { authService } from './services/auth.js';
 import { debugChatUI } from './debug.js';
 import lottie from 'lottie-web';
+import { marked } from 'marked';
 
 // Constants for localStorage
 const SESSION_ID_KEY = 'tutor_ai_current_session';
+
+// Configure marked for safe rendering
+marked.setOptions({
+    breaks: true,       // Convert line breaks to <br>
+    gfm: true,          // Enable GitHub Flavored Markdown
+    headerIds: false,   // No auto-generated header IDs
+    mangle: false,      // Don't escape HTML
+    sanitize: false     // Don't sanitize, we trust the AI output
+});
 
 // Check if Django server is running
 async function checkDjangoServer() {
@@ -55,10 +65,22 @@ const userNameDisplay = document.querySelector('.user-name');
 let currentSessionId = null;
 let isProcessing = false;
 
-// Set user name in header
+// Set user name in header and sidebar
 const user = authService.getUser();
-if (user && userNameDisplay) {
-    userNameDisplay.textContent = user.username || 'Student';
+if (user) {
+    // Update username displays
+    const userNameDisplays = document.querySelectorAll('.user-name');
+    userNameDisplays.forEach(element => {
+        if (element) {
+            element.textContent = user.username || 'Student';
+        }
+    });
+    
+    // Update user initial
+    const userInitial = document.querySelector('.user-initial');
+    if (userInitial && user.username) {
+        userInitial.textContent = user.username.charAt(0).toUpperCase();
+    }
 }
 
 // Initialize the chat interface
@@ -109,14 +131,17 @@ async function loadMessagesForSession(sessionId) {
         console.log('Loaded messages from API:', messages.length);
         
         if (messages.length === 0) {
-            // Add welcome message if no messages exist
-            const welcomeElement = document.createElement('div');
-            welcomeElement.classList.add('welcome-message');
-            welcomeElement.innerHTML = `
-                <h3>Welcome to AI Tutor!</h3>
-                <p>Ask any question about UPSC exam preparation.</p>
-            `;
-            chatMessages.appendChild(welcomeElement);
+            // Add AI welcome message with markdown
+            appendMessage(`# Welcome to AI Tutor!
+
+I'm your **UPSC exam mentor and tutor**. Here's how I can help you:
+
+- Answer questions about **UPSC exam preparation**
+- Explain complex topics in simple terms
+- Provide study strategies and exam tips
+- Share important information about the syllabus
+
+Try asking me a question about any UPSC topic!`, 'tutor', false);
         } else {
             // Display messages in the order they were received from the API
             messages.forEach(message => {
@@ -142,16 +167,39 @@ function appendMessage(content, sender, saveToLocalStorage = true) {
     const messageElement = document.createElement('div');
     messageElement.classList.add('message', `${sender}-message`);
     
+    // Create avatar
     const avatar = document.createElement('div');
     avatar.classList.add('avatar');
     avatar.innerHTML = sender === 'tutor' ? '🤖' : '👤';
     
+    // Create container for bubble and timestamp
+    const contentContainer = document.createElement('div');
+    contentContainer.classList.add('message-content');
+    
+    // Create message bubble
     const bubble = document.createElement('div');
     bubble.classList.add('message-bubble');
-    bubble.textContent = content;
+    
+    if (sender === 'tutor') {
+        // Use markdown for AI responses
+        bubble.classList.add('markdown-content');
+        bubble.innerHTML = marked.parse(content);
+    } else {
+        // Plain text for user messages
+        bubble.textContent = content;
+    }
+    
+    // Create timestamp
+    const timestamp = document.createElement('div');
+    timestamp.classList.add('message-timestamp');
+    timestamp.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    
+    // Assemble message
+    contentContainer.appendChild(bubble);
+    contentContainer.appendChild(timestamp);
     
     messageElement.appendChild(avatar);
-    messageElement.appendChild(bubble);
+    messageElement.appendChild(contentContainer);
     chatMessages.appendChild(messageElement);
     
     scrollToBottom();
@@ -273,6 +321,25 @@ async function startNewChat() {
     }
 }
 
+// Clear chat content
+function clearChat() {
+    if (confirm('Are you sure you want to clear the chat? This will only clear the messages from your screen, not from the server.')) {
+        chatMessages.innerHTML = '';
+        
+        // Add AI welcome message with markdown
+        appendMessage(`# Welcome to AI Tutor!
+
+I'm your **UPSC exam mentor and tutor**. Here's how I can help you:
+
+- Answer questions about **UPSC exam preparation**
+- Explain complex topics in simple terms
+- Provide study strategies and exam tips
+- Share important information about the syllabus
+
+Try asking me a question about any UPSC topic!`, 'tutor', false);
+    }
+}
+
 // Event Listeners
 if (sendButton) {
     sendButton.addEventListener('click', () => {
@@ -298,6 +365,9 @@ if (logoutButton) {
 
 // New chat button (if it exists)
 document.getElementById('newChatBtn')?.addEventListener('click', startNewChat);
+
+// Clear chat button
+document.getElementById('clearChatBtn')?.addEventListener('click', clearChat);
 
 // Initialize the chat
 initializeChat(); 
