@@ -1,6 +1,7 @@
 import { apiService } from './services/api.js';
 import { authService } from './services/auth.js';
 import { debugChatUI } from './debug.js';
+import { createNotesTemplate } from './notes-template.js';
 import lottie from 'lottie-web';
 import { marked } from 'marked';
 
@@ -555,6 +556,267 @@ document.getElementById('newChatBtn')?.addEventListener('click', startNewChat);
 
 // Clear chat button
 document.getElementById('clearChatBtn')?.addEventListener('click', clearChat);
+
+// Helper function to format date for filenames
+function formatDateForFilename() {
+    const now = new Date();
+    return now.toISOString().split('T')[0];  // YYYY-MM-DD format
+}
+
+// Toggle export dropdown
+function toggleExportDropdown() {
+    const dropdown = document.getElementById('exportDropdown');
+    dropdown.classList.toggle('hidden');
+}
+
+// Export chat as markdown notes
+async function exportChatAsMarkdown() {
+    try {
+        if (!currentSessionId) {
+            showError('No active chat session to export');
+            return;
+        }
+        
+        // Get messages for current session
+        const messages = await apiService.getMessages(currentSessionId);
+        
+        if (messages.length === 0) {
+            showError('No messages to export');
+            return;
+        }
+        
+        // Find current session title
+        const sessions = await apiService.getSessions();
+        const currentSession = sessions.find(session => session.id === currentSessionId);
+        let sessionTitle = currentSession?.title || 'UPSC Study Notes';
+        
+        // Format the session title for the notes
+        const titleDate = sessionTitle.includes(' - ') ? sessionTitle.split(' - ')[1] : formatDateForFilename();
+        
+        // Build content in Markdown format
+        let notesContent = `# UPSC Study Notes - ${titleDate}\n\n`;
+        notesContent += `*Generated on ${new Date().toLocaleString()}*\n\n`;
+        notesContent += `## Session Overview\n`;
+        notesContent += `This document contains notes from a UPSC tutoring session focused on exam preparation.\n\n`;
+        notesContent += `---\n\n`;
+        
+        // Add all Q&A pairs
+        messages.forEach((message, index) => {
+            // Add question with topic prefix
+            notesContent += `## Question ${index + 1}:\n\`\`\`\n${message.content}\n\`\`\`\n\n`;
+            
+            // Add answer if available
+            if (message.response) {
+                notesContent += `### Answer:\n${message.response.response_text}\n\n`;
+            }
+            
+            // Add separator between Q&A pairs
+            notesContent += `---\n\n`;
+        });
+        
+        // Add study tips section at the end
+        notesContent += `## Study Tips\n\n`;
+        notesContent += `1. **Review regularly**: Go through these notes at least once a week\n`;
+        notesContent += `2. **Make flashcards**: Convert key concepts into question-answer flashcards\n`;
+        notesContent += `3. **Practice writing**: Write concise answers to the questions covered\n`;
+        notesContent += `4. **Connect concepts**: Look for connections between different topics\n\n`;
+        
+        // Create a download link
+        const blob = new Blob([notesContent], { type: 'text/markdown' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `UPSC_Notes_${titleDate.replace(/[/\\?%*:|"<>]/g, '-')}.md`;
+        document.body.appendChild(a);
+        a.click();
+        
+        // Clean up
+        setTimeout(() => {
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }, 100);
+        
+        // Show success message
+        showSuccess('Notes exported as Markdown successfully!');
+        
+    } catch (error) {
+        console.error('Failed to export notes:', error);
+        showError('Failed to export notes. Please try again.');
+    }
+}
+
+// Export chat as handwritten-style PDF notes
+async function exportChatAsPdf() {
+    try {
+        if (!currentSessionId) {
+            showError('No active chat session to export');
+            return;
+        }
+        
+        // Show loading message
+        showInfo('Generating PDF, please wait...');
+        
+        // Get messages for current session
+        const messages = await apiService.getMessages(currentSessionId);
+        
+        if (messages.length === 0) {
+            showError('No messages to export');
+            return;
+        }
+        
+        // Find current session title
+        const sessions = await apiService.getSessions();
+        const currentSession = sessions.find(session => session.id === currentSessionId);
+        let sessionTitle = currentSession?.title || 'UPSC Study Notes';
+        
+        // Format the session title for the notes
+        const titleDate = sessionTitle.includes(' - ') ? sessionTitle.split(' - ')[1] : formatDateForFilename();
+        const fullTitle = `UPSC Study Notes - ${titleDate}`;
+        
+        // Create the HTML template for handwritten-style notes
+        const htmlContent = createNotesTemplate(fullTitle, messages);
+        
+        // Create a temporary div to render the HTML
+        const container = document.createElement('div');
+        container.innerHTML = htmlContent;
+        container.style.position = 'absolute';
+        container.style.left = '-9999px';
+        document.body.appendChild(container);
+        
+        // Wait for fonts to load
+        await document.fonts.ready;
+        
+        // Use html2canvas to capture the rendered content
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF('p', 'pt', 'a4');
+        
+        // Get all elements that should be separate pages
+        const noteContainer = container.querySelector('.notes-container');
+        
+        // Define A4 dimensions (in points)
+        const a4Width = 595.28;
+        const a4Height = 841.89;
+        const margin = 20;
+        const contentWidth = a4Width - (margin * 2);
+        
+        try {
+            // Create canvas from the HTML content
+            const canvas = await html2canvas(noteContainer, { 
+                scale: 2, // Increase quality
+                useCORS: true,
+                allowTaint: true,
+                logging: false
+            });
+            
+            // Get canvas dimensions
+            const imgData = canvas.toDataURL('image/jpeg', 1.0);
+            const imgWidth = contentWidth;
+            const pageHeight = a4Height - (margin * 2);
+            const imgHeight = canvas.height * (imgWidth / canvas.width);
+            
+            // Calculate the number of pages
+            const pageCount = Math.ceil(imgHeight / pageHeight);
+            
+            // For each page, add the appropriate part of the image
+            let heightLeft = imgHeight;
+            let position = 0;
+            let currentPage = 0;
+            
+            // Add first page
+            pdf.addImage(imgData, 'JPEG', margin, margin, imgWidth, imgHeight, null, 'FAST', 0);
+            heightLeft -= pageHeight;
+            currentPage++;
+            
+            // Add subsequent pages if content is too long
+            while (heightLeft > 0 && currentPage < pageCount) {
+                // Add a new page
+                pdf.addPage();
+                
+                // Position is negative to show the next part of the image
+                // Multiply by currentPage to move down the image for each new page
+                position = -currentPage * pageHeight;
+                
+                // Add image with the appropriate y-offset to show the next part
+                pdf.addImage(
+                    imgData, 
+                    'JPEG', 
+                    margin, // x position
+                    position + margin, // y position (negative to move up)
+                    imgWidth, // width
+                    imgHeight, // full height
+                    null, // alias
+                    'FAST', // compression
+                    0 // rotation
+                );
+                
+                heightLeft -= pageHeight;
+                currentPage++;
+            }
+            
+            // Save PDF
+            pdf.save(`UPSC_Notes_${titleDate.replace(/[/\\?%*:|"<>]/g, '-')}.pdf`);
+            
+            // Show success message
+            showSuccess('Notes exported as handwritten PDF! 📝');
+        } catch (err) {
+            console.error('Error generating PDF:', err);
+            showError('Failed to generate PDF. Please try again.');
+        }
+        
+        // Clean up
+        document.body.removeChild(container);
+    } catch (error) {
+        console.error('Failed to export notes as PDF:', error);
+        showError('Failed to export notes. Please try again.');
+    }
+}
+
+// Show info message
+function showInfo(message) {
+    const infoElement = document.createElement('div');
+    infoElement.classList.add('info-message');
+    infoElement.textContent = message;
+    chatMessages.appendChild(infoElement);
+    scrollToBottom();
+    return infoElement;
+}
+
+// Show success message
+function showSuccess(message) {
+    const successElement = document.createElement('div');
+    successElement.classList.add('success-message');
+    successElement.textContent = message;
+    chatMessages.appendChild(successElement);
+    scrollToBottom();
+    setTimeout(() => {
+        successElement.remove();
+    }, 3000);
+}
+
+// Export dropdown toggle
+document.getElementById('exportNotesBtn')?.addEventListener('click', toggleExportDropdown);
+
+// Export as Markdown
+document.getElementById('exportMarkdownBtn')?.addEventListener('click', () => {
+    toggleExportDropdown();
+    exportChatAsMarkdown();
+});
+
+// Export as PDF
+document.getElementById('exportPdfBtn')?.addEventListener('click', () => {
+    toggleExportDropdown();
+    exportChatAsPdf();
+});
+
+// Close dropdown when clicking outside
+document.addEventListener('click', (event) => {
+    const dropdown = document.getElementById('exportDropdown');
+    const exportBtn = document.getElementById('exportNotesBtn');
+    
+    if (dropdown && !dropdown.classList.contains('hidden') && !exportBtn.contains(event.target) && !dropdown.contains(event.target)) {
+        dropdown.classList.add('hidden');
+    }
+});
 
 // Initialize the chat
 initializeChat();
