@@ -16,6 +16,52 @@ marked.setOptions({
     sanitize: false     // Don't sanitize, we trust the AI output
 });
 
+// After marked configuration and before the checkDjangoServer function
+// Add sidebar toggle functionality
+function setupSidebarToggle() {
+    const sidebar = document.getElementById('sidebar');
+    const mainContent = document.getElementById('mainContent');
+    const sidebarToggle = document.getElementById('sidebarToggle');
+    
+    if (!sidebar || !mainContent || !sidebarToggle) {
+        console.error('Sidebar elements not found');
+        return;
+    }
+    
+    let sidebarOpen = true;
+    
+    // Function to toggle sidebar
+    function toggleSidebar() {
+        sidebarOpen = !sidebarOpen;
+        
+        if (sidebarOpen) {
+            sidebar.classList.remove('-translate-x-full');
+            mainContent.classList.remove('ml-0');
+            mainContent.classList.add('ml-64');
+        } else {
+            sidebar.classList.add('-translate-x-full');
+            mainContent.classList.remove('ml-64');
+            mainContent.classList.add('ml-0');
+        }
+    }
+    
+    // Toggle when button is clicked
+    sidebarToggle.addEventListener('click', toggleSidebar);
+    
+    // Auto-collapse on small screens
+    function checkScreenSize() {
+        if (window.innerWidth < 768 && sidebarOpen) {
+            toggleSidebar();
+        }
+    }
+    
+    // Check on load
+    checkScreenSize();
+    
+    // Check on resize
+    window.addEventListener('resize', checkScreenSize);
+}
+
 // Check if Django server is running
 async function checkDjangoServer() {
     console.log('Checking Django server...');
@@ -93,6 +139,9 @@ async function initializeChat() {
         const sessions = await apiService.getSessions();
         console.log('Available sessions:', sessions);
         
+        // Populate chat history sidebar
+        populateChatHistory(sessions);
+        
         if (savedSessionId && sessions.some(session => session.id === savedSessionId)) {
             // If we have a saved ID and it exists in the backend
             currentSessionId = savedSessionId;
@@ -104,7 +153,14 @@ async function initializeChat() {
         } else {
             // Create a new session if none exists
             console.log('Creating new session...');
-            const newSession = await apiService.createSession('New Chat Session');
+            
+            // Create a descriptive title with date and time
+            const now = new Date();
+            const formattedDate = now.toLocaleDateString();
+            const formattedTime = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            const sessionTitle = `UPSC Chat - ${formattedDate} ${formattedTime}`;
+            
+            const newSession = await apiService.createSession(sessionTitle);
             currentSessionId = newSession.id;
             console.log('Created new session:', currentSessionId);
         }
@@ -118,6 +174,115 @@ async function initializeChat() {
         console.error('Failed to initialize chat:', error);
         showError('Failed to connect to the chat service');
     }
+}
+
+// Helper function to extract date from session title
+function getSessionDate(sessionTitle) {
+    // Try to extract date from titles like "UPSC Chat - 6/5/2023 2:30 PM"
+    const dateMatch = sessionTitle.match(/(\d+\/\d+\/\d+)/);
+    if (dateMatch) {
+        return dateMatch[1];
+    }
+    return null;
+}
+
+// Populate chat history in the sidebar
+function populateChatHistory(sessions) {
+    const chatHistoryContainer = document.getElementById('chatHistory');
+    if (!chatHistoryContainer) {
+        console.error('Chat history container not found');
+        return;
+    }
+    
+    // Clear existing history
+    chatHistoryContainer.innerHTML = '';
+    
+    // Check if there are any sessions
+    if (sessions.length === 0) {
+        const emptyMessage = document.createElement('div');
+        emptyMessage.classList.add('text-sm', 'text-gray-400', 'italic', 'px-2');
+        emptyMessage.textContent = 'Your previous conversations will appear here';
+        chatHistoryContainer.appendChild(emptyMessage);
+        return;
+    }
+    
+    // Add each session as a clickable item
+    sessions.forEach(session => {
+        const sessionItem = document.createElement('div');
+        sessionItem.classList.add('chat-history-item', 'rounded', 'hover:bg-gray-700', 'cursor-pointer', 'transition-colors');
+        
+        // Create content wrapper
+        const contentWrapper = document.createElement('div');
+        contentWrapper.classList.add('flex', 'items-center', 'w-full');
+        
+        // Add chat icon
+        const chatIcon = document.createElement('span');
+        chatIcon.classList.add('mr-2', 'text-gray-400', 'flex-shrink-0');
+        chatIcon.innerHTML = `
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+            </svg>
+        `;
+        
+        // Create text content wrapper
+        const textWrapper = document.createElement('div');
+        textWrapper.classList.add('flex-1', 'overflow-hidden');
+        
+        // Add session title
+        const title = document.createElement('div');
+        title.classList.add('truncate', 'text-sm', 'font-medium');
+        
+        // Format session title
+        let displayTitle;
+        if (session.title && session.title.startsWith('UPSC Chat')) {
+            // Use only the date/time part if it's our auto-generated title
+            const parts = session.title.split(' - ');
+            if (parts.length > 1) {
+                displayTitle = parts[1];
+            } else {
+                displayTitle = session.title;
+            }
+        } else {
+            displayTitle = session.title || `Chat ${session.id.substring(0, 8)}`;
+        }
+        
+        title.textContent = displayTitle;
+        
+        // Add a subtitle with first few words of first message (if we had that data)
+        const subtitle = document.createElement('div');
+        subtitle.classList.add('truncate', 'text-xs', 'text-gray-400');
+        subtitle.textContent = "UPSC study session";
+        
+        // Add elements to DOM
+        textWrapper.appendChild(title);
+        textWrapper.appendChild(subtitle);
+        
+        contentWrapper.appendChild(chatIcon);
+        contentWrapper.appendChild(textWrapper);
+        
+        sessionItem.appendChild(contentWrapper);
+        chatHistoryContainer.appendChild(sessionItem);
+        
+        // Add click handler to switch to this session
+        sessionItem.addEventListener('click', async () => {
+            if (currentSessionId !== session.id) {
+                currentSessionId = session.id;
+                localStorage.setItem(SESSION_ID_KEY, currentSessionId);
+                await loadMessagesForSession(currentSessionId);
+                
+                // Update active state in UI
+                document.querySelectorAll('.chat-history-item').forEach(item => {
+                    item.classList.remove('bg-gray-700');
+                });
+                sessionItem.classList.add('bg-gray-700');
+            }
+        });
+        
+        // Highlight current session
+        if (session.id === currentSessionId) {
+            sessionItem.classList.add('bg-gray-700');
+        }
+    });
 }
 
 // Load messages for a specific session
@@ -304,8 +469,14 @@ async function startNewChat() {
             return;
         }
         
+        // Create a descriptive title with date and time
+        const now = new Date();
+        const formattedDate = now.toLocaleDateString();
+        const formattedTime = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        const sessionTitle = `UPSC Chat - ${formattedDate} ${formattedTime}`;
+        
         // Create new session
-        const newSession = await apiService.createSession('New Chat Session');
+        const newSession = await apiService.createSession(sessionTitle);
         currentSessionId = newSession.id;
         
         // Save the session ID
@@ -314,7 +485,23 @@ async function startNewChat() {
         // Clear messages
         chatMessages.innerHTML = '';
         
+        // Add welcome message
+        appendMessage(`# Welcome to AI Tutor!
+
+I'm your **UPSC exam mentor and tutor**. Here's how I can help you:
+
+- Answer questions about **UPSC exam preparation**
+- Explain complex topics in simple terms
+- Provide study strategies and exam tips
+- Share important information about the syllabus
+
+Try asking me a question about any UPSC topic!`, 'tutor', false);
+        
         console.log('Started new chat session:', currentSessionId);
+        
+        // Update chat history in the sidebar
+        const sessions = await apiService.getSessions();
+        populateChatHistory(sessions);
     } catch (error) {
         console.error('Failed to start new chat:', error);
         showError('Failed to start a new chat');
@@ -370,4 +557,7 @@ document.getElementById('newChatBtn')?.addEventListener('click', startNewChat);
 document.getElementById('clearChatBtn')?.addEventListener('click', clearChat);
 
 // Initialize the chat
-initializeChat(); 
+initializeChat();
+
+// Setup sidebar toggle
+setupSidebarToggle(); 
