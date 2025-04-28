@@ -127,6 +127,25 @@
     @apply bg-red-100 text-red-700 p-4 rounded-lg text-center my-2;
 }
 
+/* Success message */
+.success-message {
+    @apply bg-green-100 text-green-700 p-4 rounded-lg text-center my-2;
+    animation: fadeInOut 3s ease-in-out;
+}
+
+@keyframes fadeInOut {
+    0% { opacity: 0; transform: translateY(-10px); }
+    15% { opacity: 1; transform: translateY(0); }
+    85% { opacity: 1; }
+    100% { opacity: 0; }
+}
+
+/* Info message */
+.info-message {
+    @apply bg-blue-100 text-blue-700 p-4 rounded-lg text-center my-2;
+    animation: fadeInOut 5s ease-in-out;
+}
+
 /* Mobile responsiveness */
 @media (max-width: 640px) {
     .chat-messages {

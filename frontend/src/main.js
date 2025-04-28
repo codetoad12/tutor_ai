@@ -818,8 +818,35 @@ document.addEventListener('click', (event) => {
     }
 });
 
-// Initialize the chat
-initializeChat();
+// Add routing functionality
+function setupRouting() {
+    const routes = {
+        '/': initializeChat,
+        '/current-affairs': () => {
+            const currentAffairs = new CurrentAffairs();
+            currentAffairs.initialize();
+        },
+        '/notes': () => {
+            // Initialize notes functionality
+            console.log('Notes page initialized');
+        }
+    };
 
-// Setup sidebar toggle
-setupSidebarToggle(); 
+    function handleRoute() {
+        const path = window.location.pathname;
+        const routeHandler = routes[path] || routes['/'];
+        routeHandler();
+    }
+
+    // Handle initial route
+    handleRoute();
+
+    // Handle navigation
+    window.addEventListener('popstate', handleRoute);
+}
+
+// Initialize the application
+document.addEventListener('DOMContentLoaded', () => {
+    setupSidebarToggle();
+    setupRouting();
+}); 

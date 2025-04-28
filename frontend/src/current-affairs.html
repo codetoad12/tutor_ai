@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Current Affairs - Tutor AI</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="current_affairs.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <div id="sidebar" class="sidebar">
+            <div class="sidebar-header">
+                <h2>Tutor AI</h2>
+                <button id="sidebarToggle" class="sidebar-toggle">
+                    <span class="material-icons">menu</span>
+                </button>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="/" class="nav-item">
+                    <span class="material-icons">chat</span>
+                    Chat
+                </a>
+                <a href="/current-affairs" class="nav-item active">
+                    <span class="material-icons">article</span>
+                    Current Affairs
+                </a>
+                <a href="/notes" class="nav-item">
+                    <span class="material-icons">note</span>
+                    Notes
+                </a>
+            </nav>
+        </div>
+
+        <!-- Main Content -->
+        <div id="mainContent" class="main-content">
+            <div class="current-affairs-container">
+                <!-- Content will be dynamically loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script type="module" src="current-affairs.js"></script>
+</body>
+</html> 
