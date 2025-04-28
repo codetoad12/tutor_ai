@@ -49,6 +49,9 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'corsheaders',
     
+    # Local apps
+    'current_affairs',
+    
     # Custom apps
     'base.apps.BaseConfig',
     'users.apps.UsersConfig',
