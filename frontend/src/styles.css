@@ -2,6 +2,88 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Custom newspaper-style styles */
+.font-serif {
+  font-family: 'Merriweather', serif;
+}
+
+.font-sans {
+  font-family: 'Open Sans', sans-serif;
+}
+
+/* Styling for article cards */
+.article-card {
+  @apply bg-white rounded-lg shadow-md overflow-hidden transition-all duration-300;
+}
+
+.article-card:hover {
+  @apply shadow-lg transform translate-y-[-2px];
+}
+
+/* Styling for buttons */
+.btn-primary {
+  @apply px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 
+  transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50;
+}
+
+.btn-secondary {
+  @apply px-4 py-2 bg-white text-gray-700 border border-gray-300 rounded-md 
+  hover:bg-gray-50 transition-colors duration-300 focus:outline-none focus:ring-2 
+  focus:ring-gray-500 focus:ring-opacity-50;
+}
+
+/* Custom newspaper style blockquote */
+blockquote {
+  @apply pl-4 border-l-4 border-gray-300 text-gray-700 italic my-4;
+}
+
+/* Category badges */
+.category-badge {
+  @apply inline-block px-3 py-1 text-xs font-medium rounded-full;
+}
+
+.category-polity {
+  @apply bg-blue-100 text-blue-800;
+}
+
+.category-economy {
+  @apply bg-green-100 text-green-800;
+}
+
+.category-environment {
+  @apply bg-teal-100 text-teal-800;
+}
+
+.category-international {
+  @apply bg-indigo-100 text-indigo-800;
+}
+
+.category-science {
+  @apply bg-purple-100 text-purple-800;
+}
+
+/* Date formatting */
+.date-text {
+  @apply text-sm text-gray-500 font-medium;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-gray-100;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-gray-300 rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-gray-400;
+}
+
 /* Custom scrollbar styles */
 ::-webkit-scrollbar {
     width: 6px;

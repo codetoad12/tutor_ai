@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Daily Brief | UPSC Current Affairs</title>
+    <meta name="description" content="Daily current affairs digest for UPSC exam preparation">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&family=Open+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Open Sans', 'sans-serif'],
+                        serif: ['Merriweather', 'serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Open Sans', sans-serif;
+            background-color: #f3f4f6;
+        }
+        h1, h2 {
+            font-family: 'Merriweather', serif;
+        }
+        .prose {
+            max-width: none;
+        }
+        .loading-spinner {
+            border: 3px solid rgba(59, 130, 246, 0.1);
+            border-radius: 50%;
+            border-top: 3px solid rgba(59, 130, 246, 1);
+            width: 2.5rem;
+            height: 2.5rem;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div id="app" class="min-h-screen bg-gray-100">
+        <!-- Top Header -->
+        <header class="bg-white shadow-md">
+            <div class="max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8">
+                <div class="flex flex-col md:flex-row justify-between items-center">
+                    <div class="text-center md:text-left mb-4 md:mb-0">
+                        <h1 class="text-3xl font-serif font-bold text-gray-900">The Daily Brief</h1>
+                        <p class="text-sm text-gray-600" id="current-date">Wednesday, April 29, 2023</p>
+                        <p class="text-xs text-gray-500">UPSC Current Affairs Digest</p>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <label for="date-picker" class="text-sm text-gray-600">Select Date:</label>
+                        <input 
+                            id="date-picker"
+                            type="date" 
+                            class="px-2 py-1 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            value="2023-04-29"
+                        />
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
+            <div class="flex flex-col lg:flex-row">
+                <!-- News Column -->
+                <div class="lg:w-3/4 lg:pr-6">
+                    <div id="articles-container" class="space-y-6">
+                        <!-- Loading state shown initially -->
+                        <div id="loading-indicator" class="flex justify-center items-center p-12">
+                            <div class="loading-spinner"></div>
+                        </div>
+                        <!-- Error message container -->
+                        <div id="error-container" class="hidden bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+                            <p class="font-medium">Error loading articles</p>
+                            <p id="error-message" class="text-sm"></p>
+                        </div>
+                        <!-- Articles will be populated here -->
+                    </div>
+                </div>
+                
+                <!-- Sidebar -->
+                <div class="lg:w-1/4 mt-6 lg:mt-0">
+                    <div class="bg-white shadow rounded-lg p-6 sticky top-6">
+                        <h2 class="text-lg font-medium text-gray-900 mb-4">Filters</h2>
+                        
+                        <div class="mb-4">
+                            <h3 class="text-sm font-medium text-gray-700 mb-2">Categories</h3>
+                            <div id="categories-container" class="space-y-2">
+                                <!-- Categories will be populated here -->
+                            </div>
+                        </div>
+                        
+                        <div class="border-t border-gray-200 pt-4">
+                            <h3 class="text-sm font-medium text-gray-700 mb-2">Exam Focus</h3>
+                            <div class="space-y-2">
+                                <button id="prelims-focus" class="w-full text-left px-3 py-2 text-sm rounded-md bg-blue-50 text-blue-700 font-medium">
+                                    Prelims Focus
+                                </button>
+                                <button id="mains-focus" class="w-full text-left px-3 py-2 text-sm rounded-md hover:bg-gray-50 text-gray-700">
+                                    Mains Focus
+                                </button>
+                                <button id="interview-focus" class="w-full text-left px-3 py-2 text-sm rounded-md hover:bg-gray-50 text-gray-700">
+                                    Interview Focus
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="border-t border-gray-200 pt-4 mt-4">
+                            <h3 class="text-sm font-medium text-gray-700 mb-2">Quick Links</h3>
+                            <ul class="space-y-1">
+                                <li>
+                                    <a href="#" class="text-sm text-blue-600 hover:text-blue-800">
+                                        Today's Hindu Analysis
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="#" class="text-sm text-blue-600 hover:text-blue-800">
+                                        Monthly Current Affairs PDF
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="#" class="text-sm text-blue-600 hover:text-blue-800">
+                                        PIB Highlights
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="#" class="text-sm text-blue-600 hover:text-blue-800">
+                                        Economic Survey Key Points
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Sample data for fallback if API fails
+        const sampleArticles = [
+            {
+                id: 1,
+                title: "India's Green Hydrogen Mission makes significant progress",
+                summary: "The National Green Hydrogen Mission has achieved several milestones in implementation with states announcing policies and major industrial players committing to production facilities.",
+                date: "2023-04-29",
+                category: "Economy",
+                key_concepts: [
+                    "Green Hydrogen Economy", 
+                    "Renewable Energy Transition", 
+                    "Industrial Decarbonization"
+                ],
+                syllabus_connection: "GS-III: Infrastructure, Energy Sector; Conservation, Environmental Pollution and Degradation",
+                potential_questions: [
+                    "Discuss the significance of Green Hydrogen in India's pursuit of clean energy goals and analyze the challenges in its implementation.",
+                    "How can the National Green Hydrogen Mission contribute to India's commitment to achieve net-zero emissions?"
+                ]
+            },
+            {
+                id: 2,
+                title: "Supreme Court ruling on electoral bonds: Transparency in political funding",
+                summary: "The Supreme Court has struck down the electoral bond scheme, calling for greater transparency in political funding and directing the disclosure of donor details.",
+                date: "2023-04-29",
+                category: "Polity",
+                key_concepts: [
+                    "Electoral Transparency", 
+                    "Campaign Finance", 
+                    "Constitutional Validity"
+                ],
+                syllabus_connection: "GS-II: Indian Constitution, Political Funding, Electoral Reforms",
+                potential_questions: [
+                    "Examine the implications of the Supreme Court judgment on electoral bonds for transparency in political funding in India.",
+                    "Critically analyze the balance between donor privacy and public interest in knowing sources of political funding."
+                ]
+            },
+            {
+                id: 3,
+                title: "India-Middle East-Europe Economic Corridor (IMEEC) gains momentum",
+                summary: "The ambitious IMEEC project involving India, UAE, Saudi Arabia, Jordan, Israel, and European countries is moving forward with feasibility studies and bilateral agreements.",
+                date: "2023-04-29",
+                category: "International Relations",
+                key_concepts: [
+                    "Economic Corridors", 
+                    "Strategic Partnerships", 
+                    "Multimodal Connectivity"
+                ],
+                syllabus_connection: "GS-II: International Relations; GS-III: Infrastructure, Economic Development",
+                potential_questions: [
+                    "Evaluate the geopolitical and economic significance of the India-Middle East-Europe Economic Corridor (IMEEC).",
+                    "How does IMEEC fit into India's broader vision of connectivity with West Asia and Europe?"
+                ]
+            }
+        ];
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // DOM elements
+            const datePicker = document.getElementById('date-picker');
+            const currentDateDisplay = document.getElementById('current-date');
+            const articlesContainer = document.getElementById('articles-container');
+            const categoriesContainer = document.getElementById('categories-container');
+            const loadingIndicator = document.getElementById('loading-indicator');
+            const errorContainer = document.getElementById('error-container');
+            const errorMessage = document.getElementById('error-message');
+            
+            // State variables
+            let articles = [];
+            let categories = [];
+            let selectedCategories = [];
+            let currentExamFocus = 'prelims'; // Default focus
+            
+            // Initialize exam focus buttons
+            const prelimsButton = document.getElementById('prelims-focus');
+            const mainsButton = document.getElementById('mains-focus');
+            const interviewButton = document.getElementById('interview-focus');
+            
+            prelimsButton.addEventListener('click', () => setExamFocus('prelims', prelimsButton));
+            mainsButton.addEventListener('click', () => setExamFocus('mains', mainsButton));
+            interviewButton.addEventListener('click', () => setExamFocus('interview', interviewButton));
+            
+            function setExamFocus(focus, button) {
+                // Reset all buttons
+                [prelimsButton, mainsButton, interviewButton].forEach(btn => {
+                    btn.classList.remove('bg-blue-50', 'text-blue-700', 'font-medium');
+                    btn.classList.add('hover:bg-gray-50', 'text-gray-700');
+                });
+                
+                // Style the selected button
+                button.classList.remove('hover:bg-gray-50', 'text-gray-700');
+                button.classList.add('bg-blue-50', 'text-blue-700', 'font-medium');
+                
+                // Set the current focus
+                currentExamFocus = focus;
+                
+                // Filter articles by exam focus
+                // This would require your data to have an "exam_focus" property
+                // For now, we'll just render all articles
+                renderArticles();
+            }
+
+            // Date picker event handler
+            datePicker.addEventListener('change', function(e) {
+                const selectedDate = new Date(e.target.value);
+                updateDateDisplay(selectedDate);
+                fetchArticles(e.target.value);
+            });
+
+            // Format and display date
+            function updateDateDisplay(date) {
+                const formattedDate = date.toLocaleDateString('en-US', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+                currentDateDisplay.textContent = formattedDate;
+            }
+
+            // Fetch articles from API
+            async function fetchArticles(date) {
+                // Show loading indicator
+                loadingIndicator.classList.remove('hidden');
+                articlesContainer.innerHTML = '';
+                articlesContainer.appendChild(loadingIndicator);
+                errorContainer.classList.add('hidden');
+                
+                try {
+                    // Format the API URL with the selected date
+                    const apiUrl = `/api/current-affairs/?date=${date}`;
+                    
+                    // Fetch data from API
+                    const response = await fetch(apiUrl);
+                    
+                    if (!response.ok) {
+                        throw new Error(`API returned status ${response.status}`);
+                    }
+                    
+                    // Parse JSON response
+                    articles = await response.json();
+                    
+                    // Extract unique categories
+                    categories = [...new Set(articles.map(article => article.category))];
+                    
+                    // Populate category filters
+                    populateCategories();
+                    
+                    // Render articles
+                    renderArticles();
+                    
+                } catch (error) {
+                    console.error('Error fetching articles:', error);
+                    
+                    // Show error message
+                    errorMessage.textContent = error.message || 'Failed to load articles. Please try again later.';
+                    errorContainer.classList.remove('hidden');
+                    
+                    // Use sample data as fallback
+                    articles = sampleArticles;
+                    categories = [...new Set(articles.map(article => article.category))];
+                    populateCategories();
+                    renderArticles();
+                    
+                } finally {
+                    // Hide loading indicator
+                    loadingIndicator.classList.add('hidden');
+                }
+            }
+
+            // Populate category filters
+            function populateCategories() {
+                // Clear existing categories
+                categoriesContainer.innerHTML = '';
+                
+                // Create a filter for each category
+                categories.forEach(category => {
+                    const categoryDiv = document.createElement('div');
+                    categoryDiv.classList.add('flex', 'items-center');
+                    categoryDiv.innerHTML = `
+                        <input
+                            id="category-${category}"
+                            type="checkbox"
+                            class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                            ${selectedCategories.includes(category) ? 'checked' : ''}
+                        />
+                        <label for="category-${category}" class="ml-2 text-sm text-gray-700">
+                            ${category}
+                        </label>
+                    `;
+                    categoriesContainer.appendChild(categoryDiv);
+                    
+                    // Add event listener to checkbox
+                    const checkbox = categoryDiv.querySelector(`#category-${category}`);
+                    checkbox.addEventListener('change', function() {
+                        if (this.checked) {
+                            selectedCategories.push(category);
+                        } else {
+                            selectedCategories = selectedCategories.filter(cat => cat !== category);
+                        }
+                        renderArticles();
+                    });
+                });
+            }
+
+            // Render articles based on selected filters
+            function renderArticles() {
+                // Clear existing articles (but keep loading indicator if present)
+                if (!loadingIndicator.classList.contains('hidden')) {
+                    articlesContainer.innerHTML = '';
+                    articlesContainer.appendChild(loadingIndicator);
+                } else {
+                    articlesContainer.innerHTML = '';
+                }
+                
+                // Filter articles by selected categories
+                const filteredArticles = selectedCategories.length === 0 ? 
+                    articles : 
+                    articles.filter(article => selectedCategories.includes(article.category));
+                
+                // Show message if no articles match filters
+                if (filteredArticles.length === 0) {
+                    articlesContainer.innerHTML = `
+                        <div class="bg-white shadow rounded-lg p-6 text-center">
+                            <p>No articles found for the selected filters.</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                // Create article cards
+                filteredArticles.forEach(article => {
+                    const articleDiv = document.createElement('div');
+                    articleDiv.classList.add('bg-white', 'shadow', 'rounded-lg', 'overflow-hidden');
+                    
+                    // Determine category badge style
+                    let categoryStyle = 'bg-gray-100 text-gray-800';
+                    if (article.category === 'Economy') {
+                        categoryStyle = 'bg-green-100 text-green-800';
+                    } else if (article.category === 'Polity') {
+                        categoryStyle = 'bg-blue-100 text-blue-800';
+                    } else if (article.category === 'International Relations') {
+                        categoryStyle = 'bg-indigo-100 text-indigo-800';
+                    } else if (article.category === 'Environment') {
+                        categoryStyle = 'bg-teal-100 text-teal-800';
+                    } else if (article.category === 'Science') {
+                        categoryStyle = 'bg-purple-100 text-purple-800';
+                    }
+                    
+                    articleDiv.innerHTML = `
+                        <div class="p-6">
+                            <div class="flex items-center justify-between mb-4">
+                                <span class="inline-block px-3 py-1 text-xs font-medium rounded-full ${categoryStyle}">
+                                    ${article.category}
+                                </span>
+                                <span class="text-sm text-gray-500">${article.date}</span>
+                            </div>
+                            
+                            <h2 class="text-xl font-serif font-bold mb-2">${article.title}</h2>
+                            
+                            <div class="prose max-w-none text-gray-700 mb-4">
+                                ${article.summary}
+                            </div>
+                            
+                            <div class="border-t border-gray-200 pt-4 mt-4">
+                                <h3 class="text-lg font-medium text-gray-900 mb-2">Key Concepts</h3>
+                                <ul class="list-disc pl-5 space-y-1">
+                                    ${article.key_concepts.map(concept => `<li class="text-gray-700">${concept}</li>`).join('')}
+                                </ul>
+                            </div>
+                            
+                            <div class="border-t border-gray-200 pt-4 mt-4">
+                                <h3 class="text-lg font-medium text-gray-900 mb-2">Syllabus Connection</h3>
+                                <p class="text-gray-700">${article.syllabus_connection}</p>
+                            </div>
+                            
+                            <div class="border-t border-gray-200 pt-4 mt-4">
+                                <h3 class="text-lg font-medium text-gray-900 mb-2">Potential Questions</h3>
+                                <ol class="list-decimal pl-5 space-y-1">
+                                    ${article.potential_questions.map(question => `<li class="text-gray-700">${question}</li>`).join('')}
+                                </ol>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-gray-50 px-6 py-3 flex justify-end space-x-2">
+                            <button 
+                                class="inline-flex items-center px-3 py-1 border border-gray-300 text-sm leading-5 font-medium rounded-md text-gray-700 bg-white hover:text-gray-500 focus:outline-none focus:border-blue-300 active:text-gray-800 active:bg-gray-50 transition"
+                                data-article-id="${article.id}"
+                                onclick="toggleBookmark(${article.id})"
+                            >
+                                <svg class="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path>
+                                </svg>
+                                Bookmark
+                            </button>
+                            <button 
+                                class="inline-flex items-center px-3 py-1 border border-gray-300 text-sm leading-5 font-medium rounded-md text-gray-700 bg-white hover:text-gray-500 focus:outline-none focus:border-blue-300 active:text-gray-800 active:bg-gray-50 transition"
+                                onclick="shareArticle(${article.id}, '${article.title}')"
+                            >
+                                <svg class="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"></path>
+                                </svg>
+                                Share
+                            </button>
+                        </div>
+                    `;
+                    
+                    articlesContainer.appendChild(articleDiv);
+                });
+            }
+            
+            // Bookmark functionality
+            window.toggleBookmark = function(articleId) {
+                const button = document.querySelector(`button[data-article-id="${articleId}"]`);
+                
+                // Toggle bookmarked state
+                if (button.classList.contains('bookmarked')) {
+                    button.classList.remove('bookmarked', 'bg-blue-50', 'text-blue-600', 'border-blue-300');
+                    
+                    // Here you would make an API call to remove the bookmark
+                    // fetch(`/api/bookmarks/${articleId}`, { method: 'DELETE' });
+                    
+                    // Show toast message
+                    showToast('Bookmark removed');
+                } else {
+                    button.classList.add('bookmarked', 'bg-blue-50', 'text-blue-600', 'border-blue-300');
+                    
+                    // Here you would make an API call to add the bookmark
+                    // fetch(`/api/bookmarks/${articleId}`, { method: 'POST' });
+                    
+                    // Show toast message
+                    showToast('Article bookmarked');
+                }
+            };
+            
+            // Share functionality
+            window.shareArticle = function(articleId, title) {
+                // Construct the share URL
+                const shareUrl = `${window.location.origin}${window.location.pathname}?article=${articleId}`;
+                
+                // Use Web Share API if available
+                if (navigator.share) {
+                    navigator.share({
+                        title: title,
+                        text: 'Check out this article from The Daily Brief',
+                        url: shareUrl
+                    }).then(() => {
+                        showToast('Article shared successfully');
+                    }).catch((error) => {
+                        console.error('Error sharing article:', error);
+                        // Fallback to copy to clipboard
+                        copyToClipboard(shareUrl);
+                    });
+                } else {
+                    // Fallback for browsers that don't support Web Share API
+                    copyToClipboard(shareUrl);
+                }
+            };
+            
+            // Copy URL to clipboard
+            function copyToClipboard(text) {
+                const textarea = document.createElement('textarea');
+                textarea.value = text;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                showToast('Link copied to clipboard');
+            }
+            
+            // Show toast message
+            function showToast(message) {
+                // Check if a toast already exists and remove it
+                const existingToast = document.querySelector('.toast-message');
+                if (existingToast) {
+                    existingToast.remove();
+                }
+                
+                // Create toast element
+                const toast = document.createElement('div');
+                toast.classList.add('toast-message', 'fixed', 'bottom-4', 'right-4', 'bg-gray-800', 'text-white', 'px-4', 'py-2', 'rounded', 'shadow-lg', 'z-50');
+                toast.textContent = message;
+                
+                // Add to document
+                document.body.appendChild(toast);
+                
+                // Remove after 3 seconds
+                setTimeout(() => {
+                    toast.classList.add('opacity-0', 'transition-opacity', 'duration-500');
+                    setTimeout(() => {
+                        toast.remove();
+                    }, 500);
+                }, 3000);
+            }
+
+            // Initialize with current date
+            const today = new Date();
+            datePicker.value = today.toISOString().split('T')[0];
+            updateDateDisplay(today);
+            fetchArticles(datePicker.value);
+            
+            // Check for article ID in URL to open specific article
+            const urlParams = new URLSearchParams(window.location.search);
+            const articleId = urlParams.get('article');
+            
+            if (articleId) {
+                // Here you would add logic to scroll to or highlight the specific article
+                // This would be implemented after the articles are loaded
+            }
+        });
+    </script>
+</body>
+</html> 

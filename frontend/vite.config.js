@@ -1,7 +1,10 @@
 import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+import path from 'path';
 
 export default defineConfig({
-  root: 'src',
+  plugins: [react()],
+  root: './src',
   build: {
     outDir: '../dist',
     emptyOutDir: true,
@@ -9,6 +12,12 @@ export default defineConfig({
   server: {
     port: 3000,
     open: true,
+    proxy: {
+      '/api': {
+        target: 'http://localhost:8000',
+        changeOrigin: true
+      }
+    }
   },
   optimizeDeps: {
     esbuildOptions: {
@@ -18,4 +27,9 @@ export default defineConfig({
   esbuild: {
     target: 'es2020',
   },
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, './src')
+    }
+  }
 }); 

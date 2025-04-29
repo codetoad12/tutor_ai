@@ -1,35 +1,44 @@
 /** @type {import('tailwindcss').Config} */
-module.exports = {
+export default {
   content: [
-    "./src/**/*.{html,js}",
-    "./public/**/*.html",
+    "./src/**/*.{html,js,jsx,ts,tsx}",
   ],
   theme: {
     extend: {
-      colors: {
-        'chalkboard': '#2C3E50',
-        'notebook': '#F5F5F5',
-        'accent': {
-          'blue': '#3498DB',
-          'green': '#2ECC71',
-        },
-        'student': {
-          'light': '#E3F2FD',
-          'dark': '#1976D2',
-        },
-        'tutor': {
-          'light': '#F1F8E9',
-          'dark': '#689F38',
-        }
-      },
       fontFamily: {
-        'inter': ['Inter', 'sans-serif'],
-        'handwriting': ['Caveat', 'cursive'],
+        sans: ['Open Sans', 'sans-serif'],
+        serif: ['Merriweather', 'serif'],
       },
-      boxShadow: {
-        'chalkboard': '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
-      }
+      colors: {
+        'newspaper': {
+          50: '#f7f7f7',
+          100: '#e3e3e3',
+          200: '#c8c8c8',
+          300: '#a4a4a4',
+          400: '#818181',
+          500: '#666666',
+          600: '#515151',
+          700: '#434343',
+          800: '#383838',
+          900: '#313131',
+        },
+      },
+      typography: {
+        DEFAULT: {
+          css: {
+            maxWidth: '100%',
+            h2: {
+              fontFamily: 'Merriweather, serif',
+            },
+            p: {
+              fontFamily: 'Open Sans, sans-serif',
+            },
+          },
+        },
+      },
     },
   },
-  plugins: [],
+  plugins: [
+    require('@tailwindcss/typography'),
+  ],
 } 
