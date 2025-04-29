@@ -1,42 +1,64 @@
-# Tutor AI Frontend
+# The Daily Brief - UPSC Current Affairs
 
-A responsive classroom-inspired chat interface for the Tutor AI project.
+A modern digital newspaper-style web application for UPSC aspirants to stay updated with daily current affairs.
 
 ## Features
 
-- 🎨 Classroom-inspired design with chalkboard and notebook themes
-- 💬 Real-time chat interface with typing indicators
-- 📱 Fully responsive design for mobile and desktop
-- 🎯 Subject-based message organization
-- 📝 Notebook sidebar for past questions
-- 🎤 Voice input support (coming soon)
+- **Digital Newspaper Layout**: Clean, familiar interface styled like a modern news site
+- **Date-based Navigation**: Browse current affairs by date
+- **Category Filters**: Filter news by categories relevant to UPSC
+- **Exam Focus Sections**: Find content specific to Prelims, Mains, or Interview preparation
+- **UPSC-optimized Content**: Each article includes:
+  - Summary of the news event
+  - Key concepts relevant to the UPSC syllabus
+  - Direct syllabus connections
+  - Potential questions that could be asked in exams
+
+## Tech Stack
+
+- React 18
+- Tailwind CSS
+- Vite
+- date-fns for date handling
 
 ## Getting Started
 
 ### Prerequisites
 
-- Node.js (v14 or higher)
+- Node.js (v14+)
 - npm or yarn
 
 ### Installation
 
-1. Install dependencies:
+1. Clone the repository
+```bash
+git clone https://github.com/yourusername/daily-brief.git
+cd daily-brief/frontend
+```
+
+2. Install dependencies
 ```bash
 npm install
 # or
 yarn install
 ```
 
-2. Start the development server:
+3. Start the development server
 ```bash
 npm run dev
 # or
 yarn dev
 ```
 
-3. Open your browser and navigate to `http://localhost:3000`
+4. Open your browser and navigate to `http://localhost:3000`
 
-### Building for Production
+## API Integration
+
+The application expects a backend API with the following endpoint:
+
+- `/api/current-affairs/?date=YYYY-MM-DD` - Returns current affairs articles for the specified date
+
+## Build for Production
 
 ```bash
 npm run build
@@ -44,32 +66,35 @@ npm run build
 yarn build
 ```
 
-The built files will be in the `dist` directory.
+This will generate optimized production files in the `dist` directory.
 
 ## Project Structure
 
 ```
 frontend/
 ├── src/
-│   ├── index.html      # Main HTML file
-│   ├── styles.css      # TailwindCSS and custom styles
-│   └── main.js         # JavaScript functionality
-├── public/             # Static assets
-├── package.json        # Project dependencies
-├── vite.config.js      # Vite configuration
-└── tailwind.config.js  # TailwindCSS configuration
+│   ├── components/
+│   │   └── DailyBrief.js      # Main component for the newspaper layout
+│   ├── styles.css             # Global styles and Tailwind imports
+│   ├── current-affairs.js     # Entry point for the application
+│   └── current-affairs.html   # HTML template
+├── public/                    # Static files
+└── ...configuration files
 ```
 
 ## Customization
 
-- Colors and themes can be modified in `tailwind.config.js`
-- Font styles can be updated in the HTML file
-- Mock responses can be modified in `main.js`
+### Adding New Categories
 
-## Contributing
+1. Add the new category to the filtering logic in `DailyBrief.js`
+2. Add corresponding styling in `styles.css` under the category badges section
 
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request 
+### Modifying the Layout
+
+The main layout is defined in the `DailyBrief.js` component and uses a responsive design:
+- Mobile: Single column layout
+- Desktop: Two-column layout with news feed and sidebar
+
+## License
+
+MIT 
