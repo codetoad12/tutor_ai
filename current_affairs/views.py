@@ -2,15 +2,24 @@ from django.shortcuts import render
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
 from .models import CurrentAffair
 from .serializers import CurrentAffairSerializer
 from .services import CurrentAffairsService
 from datetime import datetime, timedelta
+import logging
+
+logger = logging.getLogger(__name__)
 
 # Create your views here.
 
 class CurrentAffairListAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
     def get(self, request):
+        logger.info(f"GET request received. Headers: {request.headers}")
+        logger.info(f"User: {request.user}")
+        
         queryset = CurrentAffair.objects.all()
         
         # Filter by date range
@@ -26,6 +35,8 @@ class CurrentAffairListAPIView(APIView):
             
         queryset = queryset.order_by('-date')
         serializer = CurrentAffairSerializer(queryset, many=True)
+        print(serializer.data)
+        logger.info(f"Returning {len(serializer.data)} current affairs")
         return Response(serializer.data)
 
     def post(self, request):
@@ -36,6 +47,8 @@ class CurrentAffairListAPIView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class CurrentAffairDetailAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
     def get_object(self, pk):
         try:
             return CurrentAffair.objects.get(pk=pk)
@@ -76,6 +89,8 @@ class CurrentAffairDetailAPIView(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 class NewsSummarizationAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
     def post(self, request):
         try:
             news_articles = request.data.get('articles', [])
