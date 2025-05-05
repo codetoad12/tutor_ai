@@ -50,13 +50,14 @@ INSTALLED_APPS = [
     'corsheaders',
     
     # Local apps
+    'chat.apps.ChatConfig',
     'current_affairs',
+    'prediction_engine',
     
     # Custom apps
     'base.apps.BaseConfig',
     'users.apps.UsersConfig',
     'upsc.apps.UpscConfig',
-    'chat.apps.ChatConfig',
 ]
 
 MIDDLEWARE = [
@@ -202,8 +203,8 @@ GEMINI_API_KEY = os.getenv('GEMINI_API_KEY', 'your-api-key-here')  # Get from en
 
 # CORS settings
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
+    "http://localhost:5173",  # Vite default port
+    "http://127.0.0.1:5173",
 ]
 
 CORS_ALLOW_CREDENTIALS = True

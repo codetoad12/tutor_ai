@@ -22,6 +22,7 @@ from chat import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('api/', include('current_affairs.urls')),
     path('api/auth/', include('users.urls')),
     path('api/chat/', include('chat.urls')),
     path('api/health/', views.health_check, name='health_check'),
