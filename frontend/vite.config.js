@@ -1,21 +1,10 @@
 import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
 
 export default defineConfig({
-  root: 'src',
-  build: {
-    outDir: '../dist',
-    emptyOutDir: true,
-  },
+  plugins: [react()],
   server: {
     port: 3000,
-    open: true,
-  },
-  optimizeDeps: {
-    esbuildOptions: {
-      target: 'es2020',
-    },
-  },
-  esbuild: {
-    target: 'es2020',
-  },
+    open: '/daily_brief'
+  }
 }); 

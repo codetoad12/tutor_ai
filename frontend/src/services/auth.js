@@ -42,6 +42,7 @@ class AuthService {
                 headers: {
                     'Content-Type': 'application/json',
                 },
+                credentials: 'include',
                 body: JSON.stringify(loginData),
             });
 
@@ -98,7 +99,7 @@ class AuthService {
     }
 
     isAuthenticated() {
-        return !!this.token;
+        return this.token !== null;
     }
 
     getToken() {
