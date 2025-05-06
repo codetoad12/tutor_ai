@@ -1,33 +1,38 @@
 import React from 'react';
-import { FaBookmark, FaRegBookmark } from 'react-icons/fa';
+import { FaBookmark, FaRegBookmark, FaCalendarAlt } from 'react-icons/fa';
 
 function NewsCard({ currentAffair, isBookmarked, onBookmark }) {
   return (
     <article 
       id={`affair-${currentAffair.id}`} 
-      className="bg-white border border-gray-200 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 min-h-[150px]"
+      className="bg-white border border-gray-200 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1"
     >
-      <div className="p-6">
+      <div className="p-6 sm:p-8">
         {/* Header with title and bookmark */}
-        <div className="flex justify-between items-start mb-6">
-          <h2 className="text-xl font-serif font-semibold text-blue-700 tracking-tight pr-4">
+        <div className="flex justify-between items-start gap-4 mb-6">
+          <h2 className="text-xl font-serif font-semibold text-blue-700 tracking-tight">
             {currentAffair.title}
           </h2>
           <button 
             onClick={onBookmark}
-            className="text-gray-400 hover:text-blue-700 transition-colors duration-200 flex-shrink-0"
+            className="text-gray-400 hover:text-blue-700 transition-colors duration-200 flex-shrink-0 p-1"
             aria-label={isBookmarked ? "Remove bookmark" : "Add bookmark"}
           >
-            {isBookmarked ? <FaBookmark className="text-blue-700" /> : <FaRegBookmark />}
+            {isBookmarked ? <FaBookmark className="text-blue-700 text-xl" /> : <FaRegBookmark className="text-xl" />}
           </button>
         </div>
 
-        {/* Meta information */}
-        <div className="flex flex-wrap items-center gap-4 mb-6 text-sm text-gray-600 tracking-tight">
-          <span className="px-3 py-1.5 bg-blue-100 text-blue-700 rounded-lg font-medium border border-blue-200">
+        {/* Category badge - more prominent */}
+        <div className="mb-8">
+          <span className="px-4 py-1.5 bg-blue-100 text-blue-700 rounded-full font-medium border border-blue-200 inline-flex items-center">
             {currentAffair.category}
           </span>
-          <span className="text-gray-500">
+        </div>
+
+        {/* Meta information with better spacing and icons */}
+        <div className="flex flex-wrap items-center gap-5 mb-6 text-sm text-gray-600 tracking-tight">
+          <span className="flex items-center text-gray-500">
+            <FaCalendarAlt className="mr-2 text-blue-600" />
             {new Date(currentAffair.date).toLocaleDateString('en-US', {
               year: 'numeric',
               month: 'long',
@@ -35,49 +40,53 @@ function NewsCard({ currentAffair, isBookmarked, onBookmark }) {
             })}
           </span>
           {currentAffair.source && (
-            <span className="text-gray-500">
-              • {currentAffair.source}
+            <span className="text-gray-500 flex items-center">
+              <span className="h-1.5 w-1.5 rounded-full bg-gray-400 mr-2"></span>
+              Source: {currentAffair.source}
             </span>
           )}
         </div>
 
-        {/* Summary */}
-        <div className="prose max-w-none mb-6">
+        {/* Summary with better readability */}
+        <div className="prose max-w-none mb-8">
           <p className="text-base text-gray-700 leading-relaxed tracking-tight">
             {currentAffair.summary}
           </p>
         </div>
 
-        {/* AI Insight Box */}
+        {/* AI Insight Box with improved styling */}
         {currentAffair.ai_insight && (
-          <div className="bg-blue-50 border-l-4 border-blue-700 p-4 mb-6 rounded-lg">
+          <div className="bg-gradient-to-r from-blue-50 to-blue-100 border-l-4 border-blue-700 p-5 mb-8 rounded-lg">
             <div className="flex">
-              <div className="flex-shrink-0">
-                <svg className="h-5 w-5 text-blue-700" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+              <div className="flex-shrink-0 mt-1">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-6 w-6 text-blue-700">
+                  <path d="M12 2c5.514 0 10 4.486 10 10s-4.486 10-10 10-10-4.486-10-10 4.486-10 10-10zm0-2c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm-1 16h2v2h-2zm0-12h2v10h-2z" />
                 </svg>
               </div>
-              <div className="ml-3">
-                <h3 className="text-base font-medium text-blue-700 tracking-tight">AI Insight</h3>
+              <div className="ml-4">
+                <h3 className="text-base font-serif font-medium text-blue-700 tracking-tight">UPSC Expert Insight</h3>
                 <div className="mt-2 text-base text-gray-700 tracking-tight">
-                  <p>{currentAffair.ai_insight}</p>
+                  <p className="italic">{currentAffair.ai_insight}</p>
                 </div>
               </div>
             </div>
           </div>
         )}
 
-        {/* Tags */}
+        {/* Tags with better spacing and styling */}
         {currentAffair.tags && currentAffair.tags.length > 0 && (
-          <div className="flex flex-wrap gap-2 pt-4 border-t border-gray-100">
-            {currentAffair.tags.map((tag, index) => (
-              <span 
-                key={index}
-                className="px-2.5 py-1 bg-blue-100 text-blue-700 rounded-lg text-sm border border-blue-200 tracking-tight"
-              >
-                {tag}
-              </span>
-            ))}
+          <div className="mt-6 pt-6 border-t border-gray-200">
+            <p className="text-sm font-medium text-gray-500 mb-3">Related Topics:</p>
+            <div className="flex flex-wrap gap-3">
+              {currentAffair.tags.map((tag, index) => (
+                <span 
+                  key={index}
+                  className="px-3 py-1.5 bg-gray-100 text-gray-700 rounded-full text-sm border border-gray-200 tracking-tight hover:bg-blue-50 hover:text-blue-700 hover:border-blue-200 transition-colors"
+                >
+                  {tag}
+                </span>
+              ))}
+            </div>
           </div>
         )}
       </div>
