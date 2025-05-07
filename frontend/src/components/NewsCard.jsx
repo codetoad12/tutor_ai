@@ -9,7 +9,7 @@ function NewsCard({ currentAffair, isBookmarked, onBookmark }) {
     >
       <div className="p-8 sm:p-10">
         {/* Header with title and bookmark */}
-        <div className="flex justify-between items-start gap-6 mb-8">
+        <div className="flex justify-between items-start gap-6 mb-20">
           <h2 className="text-xl font-serif font-semibold text-blue-700 tracking-tight leading-relaxed">
             {currentAffair.title}
           </h2>
@@ -23,40 +23,43 @@ function NewsCard({ currentAffair, isBookmarked, onBookmark }) {
         </div>
 
         {/* Category badge */}
-        <div className="mb-8">
+        <div className="mb-20">
           <span className="px-5 py-2 bg-blue-50 text-blue-600 rounded-full text-xs font-semibold shadow-sm hover:bg-blue-100 transition-colors">
             {currentAffair.category}
           </span>
         </div>
 
         {/* Meta information with better spacing and icons */}
-        <div className="flex flex-wrap items-center gap-6 mb-8 text-sm text-gray-600 tracking-tight">
-          <span className="flex items-center text-gray-500 space-x-3">
+        <div className="flex flex-wrap items-center gap-24 mb-20 text-sm text-gray-600 tracking-tight">
+          {/* Date */}
+          <div className="flex items-center gap-3 text-gray-500">
             <FaCalendarAlt className="text-blue-600" />
-            <span>{new Date(currentAffair.date).toLocaleDateString('en-US', {
+            {new Date(currentAffair.date).toLocaleDateString('en-US', {
               year: 'numeric',
               month: 'long',
               day: 'numeric'
-            })}</span>
-          </span>
+            })}
+          </div>
+          
+          {/* Source */}
           {currentAffair.source && (
-            <span className="text-gray-500 flex items-center space-x-3">
+            <div className="flex items-center gap-3 text-gray-500 ml-8">
               <span className="h-1.5 w-1.5 rounded-full bg-gray-400"></span>
-              <span>Source: {currentAffair.source}</span>
-            </span>
+              Source: {currentAffair.source}
+            </div>
           )}
         </div>
 
         {/* Summary with better readability */}
-        <div className="prose max-w-none mb-10">
-          <p className="text-base text-gray-700 leading-relaxed tracking-tight">
+        <div style={{ marginBottom: '40px' }} className="prose max-w-none">
+          <p className="text-base text-gray-700 leading-relaxed tracking-tight whitespace-pre-line">
             {currentAffair.summary}
           </p>
         </div>
 
         {/* AI Insight Box with improved styling */}
         {currentAffair.ai_insight && (
-          <div className="bg-gradient-to-r from-blue-50 to-blue-100 border-l-4 border-blue-700 p-7 mb-10 rounded-lg">
+          <div style={{ marginBottom: '40px' }} className="bg-gradient-to-r from-blue-50 to-blue-100 border-l-4 border-blue-700 p-7 rounded-lg">
             <div className="flex">
               <div className="flex-shrink-0 mt-1">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-6 w-6 text-blue-700">
@@ -66,7 +69,7 @@ function NewsCard({ currentAffair, isBookmarked, onBookmark }) {
               <div className="ml-6">
                 <h3 className="text-base font-serif font-medium text-blue-700 tracking-tight">UPSC Expert Insight</h3>
                 <div className="mt-3 text-base text-gray-700 tracking-tight">
-                  <p className="italic">{currentAffair.ai_insight}</p>
+                  <p className="italic whitespace-pre-line">{currentAffair.ai_insight}</p>
                 </div>
               </div>
             </div>
@@ -75,7 +78,7 @@ function NewsCard({ currentAffair, isBookmarked, onBookmark }) {
 
         {/* Tags with better spacing and styling */}
         {currentAffair.tags && currentAffair.tags.length > 0 && (
-          <div className="mt-8 pt-6 border-t border-gray-200">
+          <div className="mt-20 pt-10 border-t border-gray-200">
             <p className="text-sm font-medium text-gray-500 mb-4">Related Topics:</p>
             <div className="flex flex-wrap gap-6">
               {currentAffair.tags.map((tag, index) => (

@@ -186,10 +186,10 @@ function MainContent() {
                 <p className="text-red-600 text-base tracking-tight">{error}</p>
               </div>
             ) : (
-              <div className="space-y-6">
+              <div>
                 {filteredAffairs.length > 0 ? (
                   <>
-                    <div className="bg-white border border-gray-200 rounded-lg p-6 flex flex-wrap justify-between items-center shadow-sm">
+                    <div style={{ marginBottom: '40px' }} className="bg-white border border-gray-200 rounded-lg p-6 flex flex-wrap justify-between items-center shadow-sm">
                       <p className="text-gray-700 text-base">
                         {filteredAffairs.length === 1 ? (
                           <span className="font-serif font-medium">Discover 1 important story for your UPSC preparation today</span>
@@ -247,13 +247,14 @@ function MainContent() {
                       </div>
                     </div>
                     
-                    {filteredAffairs.map((affair) => (
-                      <NewsCard 
-                        key={affair.id} 
-                        currentAffair={affair}
-                        isBookmarked={bookmarkedAffairs.some(a => a.id === affair.id)}
-                        onBookmark={() => handleBookmark(affair)}
-                      />
+                    {filteredAffairs.map((affair, index) => (
+                      <div key={affair.id} style={{ marginBottom: index < filteredAffairs.length - 1 ? '40px' : '0' }}>
+                        <NewsCard 
+                          currentAffair={affair}
+                          isBookmarked={bookmarkedAffairs.some(a => a.id === affair.id)}
+                          onBookmark={() => handleBookmark(affair)}
+                        />
+                      </div>
                     ))}
                   </>
                 ) : (
@@ -278,9 +279,9 @@ function MainContent() {
 
           {/* Sidebar */}
           <div className="order-1 lg:order-2 lg:col-span-4 sticky top-24">
-            <div className="space-y-8">
+            <div>
               {/* Weekly Quiz Button */}
-              <div className="bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden mb-2">
+              <div style={{ marginBottom: '40px' }} className="bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden">
                 <div className="p-6 text-center">
                   <h3 className="text-lg font-serif font-semibold text-blue-700 mb-3">Test Your Knowledge</h3>
                   <p className="text-sm text-gray-600 mx-auto">Challenge yourself with questions on recent current affairs</p>
@@ -292,7 +293,7 @@ function MainContent() {
               </div>
 
               {/* Trending Topics */}
-              <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-8 hover:shadow-md transition-all duration-300">
+              <div style={{ marginBottom: '40px' }} className="bg-white border border-gray-200 rounded-xl shadow-sm p-8 hover:shadow-md transition-all duration-300">
                 <h2 className="text-xl font-serif font-semibold text-blue-700 tracking-tight mb-5 flex items-center">
                   <FaChartLine className="text-blue-700 mr-3" />
                   <span>Trending Topics</span>
@@ -355,7 +356,7 @@ function MainContent() {
 
               {/* Bookmarks Section */}
               {bookmarkedAffairs.length > 0 && (
-                <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-8 hover:shadow-md transition-all duration-300">
+                <div style={{ marginBottom: '40px' }} className="bg-white border border-gray-200 rounded-lg shadow-sm p-8 hover:shadow-md transition-all duration-300">
                   <h2 className="text-xl font-serif font-semibold text-blue-700 tracking-tight mb-5 flex items-center">
                     <FaBookmark className="text-blue-700 mr-3" />
                     <span>Your Bookmarks</span>
