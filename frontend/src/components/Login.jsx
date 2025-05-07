@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { authService } from '../services/auth';
-import { FaUser, FaLock, FaSpinner } from 'react-icons/fa';
+import { FaUser, FaLock, FaSpinner, FaGraduationCap, FaBook, FaPencilAlt, FaRobot } from 'react-icons/fa';
 
 function Login({ onLogin }) {
   const [credentials, setCredentials] = useState({
@@ -30,129 +30,121 @@ function Login({ onLogin }) {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
-        <div>
-          <h2 className="mt-6 text-center text-4xl font-serif font-bold text-blue-700 tracking-tight">
-            Welcome Back
-          </h2>
-          <p className="mt-2 text-center text-base text-gray-600 tracking-tight">
-            Sign in to access your UPSC preparation dashboard
-          </p>
+    <div className="bg-notebook min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-blue-50 via-white to-purple-50">
+      <div className="max-w-md w-full">
+        {/* TUTOR AI Header */}
+        <div className="text-center mb-6">
+          <div className="flex items-center justify-center space-x-3 mb-2">
+            <FaRobot className="w-8 h-8 text-accent-blue" />
+            <h1 className="text-4xl font-bold text-accent-blue tracking-wider font-serif">
+              TUTOR AI
+            </h1>
+          </div>
+          <div className="h-1 w-24 bg-accent-blue mx-auto rounded-full"></div>
         </div>
 
-        <div className="mt-8 bg-white py-8 px-4 shadow-sm rounded-lg sm:px-10 border border-gray-200">
-          <form className="space-y-6" onSubmit={handleSubmit}>
+        <div className="bg-white rounded-xl shadow-chalkboard p-8 border-t-4 border-accent-blue">
+          <div className="text-center mb-8">
+            <h2 className="text-2xl font-bold text-chalkboard mb-2">Welcome to Your Learning Journey!</h2>
+            <p className="text-sm text-gray-600">Where every login is a step towards knowledge</p>
+          </div>
+
+          <form className="space-y-4" onSubmit={handleSubmit}>
             {error && (
-              <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-center">
-                <p className="text-red-600 text-sm tracking-tight">{error}</p>
+              <div className="bg-red-50 text-red-600 text-xs text-center mb-4 p-3 rounded-lg border border-red-100">
+                {error}
               </div>
             )}
 
-            <div className="space-y-4">
-              <div>
-                <label htmlFor="username" className="block text-sm font-medium text-gray-700 tracking-tight mb-1">
-                  Username
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <FaUser className="h-5 w-5 text-gray-400" />
-                  </div>
-                  <input
-                    id="username"
-                    name="username"
-                    type="text"
-                    required
-                    className="appearance-none block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base tracking-tight"
-                    placeholder="Enter your username"
-                    value={credentials.username}
-                    onChange={(e) => setCredentials({ ...credentials, username: e.target.value })}
-                  />
+            <div className="mb-3">
+              <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
+                <span className="mr-2">Username or Email</span>
+                <div className="flex-grow border-b border-gray-200"></div>
+              </label>
+              <div className="relative">
+                <div className="absolute -left-7 flex items-center pointer-events-none">
+                  <FaUser className="text-sm text-accent-blue" />
                 </div>
-              </div>
-
-              <div>
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700 tracking-tight mb-1">
-                  Password
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <FaLock className="h-5 w-5 text-gray-400" />
-                  </div>
-                  <input
-                    id="password"
-                    name="password"
-                    type="password"
-                    required
-                    className="appearance-none block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base tracking-tight"
-                    placeholder="Enter your password"
-                    value={credentials.password}
-                    onChange={(e) => setCredentials({ ...credentials, password: e.target.value })}
-                  />
-                </div>
+                <input
+                  id="username"
+                  type="text"
+                  value={credentials.username}
+                  onChange={(e) => setCredentials({ ...credentials, username: e.target.value })}
+                  className="pl-3 pr-3 py-2.5 w-full text-sm rounded-md border border-gray-300 focus:border-accent-blue focus:ring-1 focus:ring-accent-blue bg-gray-50"
+                  placeholder="Enter your username or email"
+                />
               </div>
             </div>
 
-            <div className="flex items-center justify-between">
+            <div className="mb-3">
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
+                <span className="mr-2">Password</span>
+                <div className="flex-grow border-b border-gray-200"></div>
+              </label>
+              <div className="relative">
+                <div className="absolute -left-7 flex items-center pointer-events-none">
+                  <FaLock className="text-sm text-accent-blue" />
+                </div>
+                <input
+                  id="password"
+                  type="password"
+                  value={credentials.password}
+                  onChange={(e) => setCredentials({ ...credentials, password: e.target.value })}
+                  className="pl-3 pr-3 py-2.5 w-full text-sm rounded-md border border-gray-300 focus:border-accent-blue focus:ring-1 focus:ring-accent-blue bg-gray-50"
+                  placeholder="Enter your password"
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between mb-4 text-sm">
               <div className="flex items-center">
                 <input
-                  id="remember-me"
-                  name="remember-me"
                   type="checkbox"
-                  className="h-4 w-4 text-blue-700 focus:ring-blue-500 border-gray-300 rounded"
+                  id="remember"
                   checked={credentials.rememberMe}
                   onChange={(e) => setCredentials({ ...credentials, rememberMe: e.target.checked })}
+                  className="h-4 w-4 text-accent-blue focus:ring-1 focus:ring-accent-blue border-gray-300 rounded"
                 />
-                <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-700 tracking-tight">
+                <label htmlFor="remember" className="ml-2 text-gray-700">
                   Remember me
                 </label>
               </div>
-
-              <div className="text-sm">
-                <a href="#" className="font-medium text-blue-700 hover:text-blue-800 tracking-tight">
-                  Forgot your password?
-                </a>
-              </div>
+              <a href="#" className="text-accent-blue hover:text-accent-blue-dark font-medium">
+                Forgot password?
+              </a>
             </div>
 
-            <div>
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-base font-medium text-white bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
-              >
-                {loading ? (
-                  <>
-                    <FaSpinner className="animate-spin -ml-1 mr-2 h-5 w-5" />
-                    Signing in...
-                  </>
-                ) : (
-                  'Sign in'
-                )}
-              </button>
-            </div>
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-accent-blue text-white py-3 px-4 rounded-lg hover:bg-accent-blue-dark focus:outline-none focus:ring-2 focus:ring-accent-blue focus:ring-offset-2 transform transition-all duration-200 hover:scale-[1.02] disabled:opacity-50 disabled:hover:scale-100"
+            >
+              {loading ? (
+                <div className="flex items-center justify-center">
+                  <FaSpinner className="animate-spin mr-2" />
+                  Opening your classroom...
+                </div>
+              ) : (
+                'Start Learning'
+              )}
+            </button>
           </form>
 
-          <div className="mt-6">
+          <div className="mt-8 text-center">
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
                 <div className="w-full border-t border-gray-200"></div>
               </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white text-gray-500 tracking-tight">
-                  New to UPSC Prep?
-                </span>
+              <div className="relative flex justify-center">
+                <span className="px-4 text-xs text-gray-500 bg-white">New to our classroom?</span>
               </div>
             </div>
-
-            <div className="mt-6">
-              <a
-                href="#"
-                className="w-full flex justify-center py-2.5 px-4 border border-gray-300 rounded-lg shadow-sm text-base font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200"
-              >
-                Create an account
+            <p className="mt-4 text-sm">
+              <a href="register.html" className="text-accent-blue hover:text-accent-blue-dark font-medium inline-flex items-center">
+                <FaGraduationCap className="mr-2" />
+                Begin Your Learning Adventure
               </a>
-            </div>
+            </p>
           </div>
         </div>
       </div>
