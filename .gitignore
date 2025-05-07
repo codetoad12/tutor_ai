@@ -1,14 +1,29 @@
 # Dependencies
 node_modules/
+frontend/node_modules/
+**/node_modules/
 /.pnp
 .pnp.js
 
 # Testing
 /coverage
+/frontend/coverage
 
 # Production
 /dist
 /build
+/frontend/dist
+/frontend/build
+
+# Development
+.cache/
+.parcel-cache
+.next
+.nuxt
+.vuepress/dist
+.serverless/
+.fusebox/
+.dynamodb/
 
 # Misc
 .DS_Store
@@ -21,6 +36,21 @@ node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+.pnpm-debug.log*
+
+# Frontend specific
+.eslintcache
+.stylelintcache
+*.css.map
+*.sass.map
+*.scss.map
+.webpack/
+frontend/.env*
+frontend/build/
+frontend/dist/
+frontend/.cache/
+frontend/coverage/
+frontend/storybook-static/
 
 # Python related
 __pycache__/
@@ -53,6 +83,9 @@ var/
 *.ntvs*
 *.njsproj
 *.sln
+*.sw?
+*.sublime-workspace
+*.sublime-project
 
 # Environment variables
 .env
@@ -87,4 +120,10 @@ env/
 .Spotlight-V100
 .Trashes
 ehthumbs.db
-Thumbs.db 
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+.temp/
+.tmp/ 
