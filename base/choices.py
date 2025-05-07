@@ -15,4 +15,14 @@ class ContentType(Enum):
     VIDEO = "video"
     AUDIO = "audio"
     PDF = "pdf"
-    QUIZ = "quiz" 
+    QUIZ = "quiz"
+
+class CurrentAffairCategory(Enum):
+    POLITY = "Polity"
+    ECONOMY = "Economy"
+    INTERNATIONAL_RELATIONS = "International Relations"
+    ENVIRONMENT = "Environment"
+    SCIENCE_TECHNOLOGY = "Science & Technology"
+    SOCIAL_ISSUES = "Social Issues"
+    SECURITY = "Security"
+    MISCELLANEOUS = "Miscellaneous" 
