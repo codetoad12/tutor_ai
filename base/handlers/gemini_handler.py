@@ -10,7 +10,7 @@ class GeminiHandler:
         """Initialize the Gemini handler with API key and model configuration."""
         self.api_key = settings.GEMINI_API_KEY
         genai.configure(api_key=self.api_key)
-        self.model = genai.GenerativeModel('gemini-1.5-pro')
+        self.model = genai.GenerativeModel('gemini-1.5-flash')
     
     def generate_response(
         self, 
