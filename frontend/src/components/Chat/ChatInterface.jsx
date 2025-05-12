@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { marked } from 'marked';
-import { FaPlus, FaTrash, FaDownload, FaFileAlt, FaFilePdf, FaRegClock, FaExclamationTriangle } from 'react-icons/fa';
+import { FaPlus, FaTrash, FaDownload, FaFileAlt, FaFilePdf, FaRegClock, FaExclamationTriangle, FaArrowLeft } from 'react-icons/fa';
 import { apiService } from '../../services/api';
 import { authService } from '../../services/auth';
 
@@ -467,6 +467,12 @@ Try asking me a question about any UPSC topic!`,
         }
     };
 
+    // Function to navigate back to main app
+    const navigateToMain = () => {
+        // Navigate to the main application view
+        window.location.href = '/';
+    };
+
     if (initialLoading) {
         return (
             <div className="flex h-screen items-center justify-center bg-gray-100">
@@ -479,14 +485,9 @@ Try asking me a question about any UPSC topic!`,
     }
 
     return (
-        <div className="flex h-screen bg-gray-100">
+        <div className="flex h-screen w-full overflow-hidden bg-gray-100">
             {/* Sidebar */}
-            <div id="sidebar" className="w-64 bg-gray-800 text-white p-4 flex flex-col h-full shadow-lg">
-                <div className="mb-6">
-                    <h2 className="text-xl font-semibold mb-2">AI Tutor</h2>
-                    <p className="text-gray-400 text-sm">UPSC Preparation Assistant</p>
-                </div>
-                
+            <div id="sidebar" className="w-64 bg-gray-800 text-white p-4 flex flex-col h-screen shadow-lg fixed left-0 top-0 z-10 overflow-y-auto">
                 {/* New Chat Button */}
                 <button 
                     onClick={startNewChat} 
@@ -498,14 +499,14 @@ Try asking me a question about any UPSC topic!`,
                 </button>
                 
                 {/* Chat History */}
-                <div className="mb-4">
+                <div className="mb-4 overflow-y-auto">
                     <h3 className="text-gray-400 uppercase text-xs font-semibold tracking-wider mb-2">Chat History</h3>
                     <div id="chatHistory" className="space-y-1 max-h-80 overflow-y-auto pr-1">
                         {sessions.length > 0 ? (
                             sessions.map(session => (
                                 <div 
                                     key={session.id} 
-                                    className={`chat-history-item px-3 py-2 ${currentSessionId === session.id.toString() ? 'bg-gray-700' : ''}`}
+                                    className={`chat-history-item px-3 py-2 ${currentSessionId === session.id.toString() ? 'bg-gray-700' : ''} cursor-pointer hover:bg-gray-700 transition-colors rounded`}
                                     onClick={() => switchSession(session.id.toString())}
                                 >
                                     <div className="flex items-center w-full">
@@ -581,16 +582,34 @@ Try asking me a question about any UPSC topic!`,
                 </div>
             </div>
             
-            {/* Main Content */}
-            <div id="mainContent" className="flex-1 flex flex-col ml-64">
+            {/* Main Chat Content */}
+            <div className="w-full ml-64 h-screen flex flex-col">
+                {/* Top Navigation Bar */}
+                <div className="h-14 bg-white border-b border-gray-200 flex items-center justify-between px-4 w-full shadow-sm">
+                    <button 
+                        onClick={navigateToMain}
+                        className="flex items-center text-gray-700 hover:text-blue-600 transition-colors"
+                    >
+                        <FaArrowLeft className="mr-2" />
+                        <span>Back to Dashboard</span>
+                    </button>
+                    
+                    {/* Session title display */}
+                    {currentSessionId && sessions.length > 0 && (
+                        <div className="text-gray-600 font-medium">
+                            {sessions.find(s => s.id.toString() === currentSessionId)?.title || 'UPSC Chat Session'}
+                        </div>
+                    )}
+                </div>
+                
                 {/* Error Banner (if applicable) */}
                 {errorState && errorState.isQuotaError && (
-                    <div className="bg-amber-50 border-t-4 border-amber-500 p-3 shadow-md">
+                    <div className="bg-amber-50 border-l-4 border-amber-500 p-3 mx-auto my-2 w-full max-w-3xl shadow-sm">
                         <div className="flex items-center">
-                            <div className="py-1 text-amber-500">
-                                <FaExclamationTriangle className="text-xl" />
+                            <div className="text-amber-500 mr-3">
+                                <FaExclamationTriangle />
                             </div>
-                            <div className="ml-3">
+                            <div>
                                 <p className="text-sm font-medium text-amber-700">
                                     API Quota Limit Reached
                                 </p>
@@ -598,113 +617,119 @@ Try asking me a question about any UPSC topic!`,
                                     The AI service is currently at capacity. Messages can be sent but responses may be delayed.
                                 </p>
                             </div>
-                            <div className="ml-auto">
-                                <button 
-                                    onClick={() => setErrorState(null)} 
-                                    className="inline-flex text-gray-400 hover:text-gray-500 focus:outline-none"
-                                >
-                                    <span className="sr-only">Dismiss</span>
-                                    <svg className="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                                    </svg>
-                                </button>
-                            </div>
                         </div>
                     </div>
                 )}
-            
-                {/* Chat Container */}
-                <div className="flex-1 overflow-hidden flex flex-col">
-                    {/* Chat Messages */}
-                    <div 
-                        ref={chatMessagesRef}
-                        className="chat-messages flex-1 overflow-y-auto p-4 space-y-4"
-                    >
+                
+                {/* Messages Container */}
+                <div 
+                    ref={chatMessagesRef}
+                    className="flex-1 overflow-y-auto px-4 py-6" 
+                    style={{ 
+                        backgroundColor: '#FAFAFA',
+                        height: 'calc(100vh - 144px)' // Subtract top bar and input heights
+                    }}
+                >
+                    <div className="max-w-5xl mx-auto space-y-6 pb-24">
                         {messages.map((message, index) => (
                             <div
                                 key={index}
-                                className={`message ${message.role === 'user' ? 'student-message' : 'tutor-message'} ${message.temporary ? (message.error ? 'error-message' : 'success-message') : ''}`}
+                                className={`message flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
                             >
-                                {!message.temporary && (
-                                    <div className="avatar">
-                                        {message.role === 'user' ? '👤' : '🤖'}
+                                {message.role === 'assistant' && (
+                                    <div className="flex items-center justify-center h-8 w-8 rounded-full bg-amber-500 text-white mr-3 flex-shrink-0">
+                                        🤖
                                     </div>
                                 )}
                                 
-                                <div className="message-content">
-                                    {message.temporary ? (
-                                        <div className={`${message.error ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'} p-4 rounded-lg text-center`}>
-                                            {message.content}
-                                        </div>
-                                    ) : (
-                                        <>
+                                <div className={`message-content max-w-3xl ${message.role === 'user' ? 'ml-12' : 'mr-12'}`}>
+                                    <div 
+                                        className={`p-4 rounded-lg shadow-sm ${
+                                            message.role === 'user' 
+                                                ? 'bg-blue-600 text-white rounded-tr-none' 
+                                                : 'bg-white text-gray-800 rounded-tl-none border-l-4 border-l-gray-200'
+                                        } ${message.isError ? 'border-red-300 bg-red-50 text-red-700' : ''}`}
+                                    >
+                                        {message.role === 'user' ? (
+                                            message.content
+                                        ) : (
                                             <div 
-                                                className={`message-bubble ${message.role === 'user' ? '' : 'markdown-content'} ${message.isError ? 'error-bubble' : ''}`}
-                                                dangerouslySetInnerHTML={message.role === 'user' ? undefined : { __html: marked.parse(message.content) }}
-                                            >
-                                                {message.role === 'user' ? message.content : null}
-                                            </div>
-                                            <div className="message-timestamp">
-                                                <div className="flex items-center text-xs text-gray-500">
-                                                    <FaRegClock className="mr-1" size={10} />
-                                                    {message.timestamp || new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                                    {message.model && <span className="ml-2 opacity-75">{message.model}</span>}
-                                                </div>
-                                            </div>
-                                            
-                                            {/* Retry button for error messages */}
-                                            {message.isError && message.role === 'assistant' && index === messages.length - 1 && (
-                                                <button 
-                                                    onClick={retryLastMessage}
-                                                    className="mt-2 text-xs bg-blue-50 text-blue-700 px-3 py-1 rounded hover:bg-blue-100 transition-colors"
-                                                >
-                                                    Retry
-                                                </button>
-                                            )}
-                                        </>
+                                                className="markdown-content" 
+                                                dangerouslySetInnerHTML={{ __html: marked.parse(message.content) }}
+                                            />
+                                        )}
+                                    </div>
+                                    
+                                    <div className="mt-1 text-xs text-gray-500 flex">
+                                        <span className="mr-2">{message.timestamp || new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                                        {message.model && <span className="opacity-75 italic">{message.model}</span>}
+                                    </div>
+                                    
+                                    {/* Retry button for error messages */}
+                                    {message.isError && message.role === 'assistant' && index === messages.length - 1 && (
+                                        <button 
+                                            onClick={retryLastMessage}
+                                            className="mt-2 text-xs bg-blue-50 text-blue-700 px-3 py-1 rounded hover:bg-blue-100 transition-colors"
+                                        >
+                                            Retry
+                                        </button>
                                     )}
                                 </div>
+                                
+                                {message.role === 'user' && (
+                                    <div className="flex items-center justify-center h-8 w-8 rounded-full bg-blue-600 text-white ml-3 flex-shrink-0">
+                                        👤
+                                    </div>
+                                )}
                             </div>
                         ))}
                         
+                        {/* Loading Indicator */}
                         {loading && (
-                            <div className="typing-indicator">
-                                <div className="avatar">🤖</div>
-                                <div className="typing-bubble">
-                                    <div className="dot"></div>
-                                    <div className="dot"></div>
-                                    <div className="dot"></div>
+                            <div className="flex items-start">
+                                <div className="flex items-center justify-center h-8 w-8 rounded-full bg-amber-500 text-white mr-3">
+                                    🤖
+                                </div>
+                                <div className="bg-white p-4 rounded-lg shadow-sm rounded-tl-none flex items-center space-x-2 min-w-[60px]">
+                                    <div className="w-2 h-2 rounded-full bg-gray-300 animate-pulse"></div>
+                                    <div className="w-2 h-2 rounded-full bg-gray-300 animate-pulse delay-150"></div>
+                                    <div className="w-2 h-2 rounded-full bg-gray-300 animate-pulse delay-300"></div>
                                 </div>
                             </div>
                         )}
+                        
+                        {/* Scroll anchor */}
                         <div ref={messagesEndRef} />
                     </div>
-                    
-                    {/* Message Input */}
-                    <form onSubmit={handleSendMessage} className="p-4 border-t border-gray-200 bg-white">
-                        <div className="flex rounded-lg border border-gray-300 overflow-hidden focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500">
-                            <textarea
-                                value={input}
-                                onChange={(e) => setInput(e.target.value)}
-                                placeholder="Ask anything about UPSC preparation..."
-                                className="flex-1 p-3 resize-none outline-none"
-                                rows="2"
-                                disabled={loading}
-                                onKeyDown={(e) => {
-                                    if (e.key === 'Enter' && !e.shiftKey) {
-                                        e.preventDefault();
-                                        handleSendMessage(e);
-                                    }
-                                }}
-                            />
+                </div>
+                
+                {/* Message Input */}
+                <div className="border-t border-gray-200 bg-white p-4">
+                    <div className="max-w-5xl mx-auto">
+                        <form onSubmit={handleSendMessage} className="flex">
+                            <div className="flex-1 border border-gray-300 rounded-l-lg overflow-hidden focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500">
+                                <textarea
+                                    value={input}
+                                    onChange={(e) => setInput(e.target.value)}
+                                    placeholder="Ask your question about UPSC exam preparation..."
+                                    className="w-full p-3 resize-none outline-none min-h-[60px]"
+                                    disabled={loading}
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter' && !e.shiftKey) {
+                                            e.preventDefault();
+                                            handleSendMessage(e);
+                                        }
+                                    }}
+                                />
+                            </div>
                             <button
                                 type="submit"
                                 disabled={loading || !input.trim()}
-                                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 transition-colors disabled:opacity-50 disabled:hover:bg-blue-600"
+                                className="bg-blue-600 hover:bg-blue-700 text-white px-6 rounded-r-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                             >
-                                Send
+                                {loading ? 'Sending...' : 'Send'}
                             </button>
-                        </div>
+                        </form>
                         
                         {/* API status indicator */}
                         {errorState && errorState.isQuotaError && (
@@ -713,7 +738,7 @@ Try asking me a question about any UPSC topic!`,
                                 AI service at capacity - responses may be delayed
                             </div>
                         )}
-                    </form>
+                    </div>
                 </div>
             </div>
         </div>

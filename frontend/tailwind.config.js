@@ -1,34 +1,39 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   content: [
-    "./src/**/*.{html,js}",
+    "./src/**/*.{html,js,jsx}",
     "./public/**/*.html",
   ],
   theme: {
     extend: {
       colors: {
-        'chalkboard': '#2C3E50',
-        'notebook': '#F5F5F5',
-        'accent': {
-          'blue': '#3498DB',
-          'green': '#2ECC71',
-        },
-        'student': {
-          'light': '#E3F2FD',
-          'dark': '#1976D2',
-        },
-        'tutor': {
-          'light': '#F1F8E9',
-          'dark': '#689F38',
-        }
+        'chalk': '#F5F5F5',
+        'paper': '#FFFFFF',
+        'ink': '#1F2937',
+        'accent': '#2563EB',
+        'accent-blue': '#2563EB',
+        'highlight': '#FEF3C7',
+        'border': '#E5E7EB',
+        'muted': '#9CA3AF',
       },
       fontFamily: {
-        'inter': ['Inter', 'sans-serif'],
-        'handwriting': ['Caveat', 'cursive'],
+        'sans': ['Inter', 'system-ui', 'sans-serif'],
+        'serif': ['Georgia', 'Cambria', 'Times New Roman', 'serif'],
+        'mono': ['ui-monospace', 'monospace'],
       },
       boxShadow: {
-        'chalkboard': '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
-      }
+        'subtle': '0 1px 2px rgba(0, 0, 0, 0.05)',
+        'card': '0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06)',
+      },
+      animation: {
+        'fade': 'fade 0.3s ease-out',
+      },
+      keyframes: {
+        fade: {
+          '0%': { opacity: 0 },
+          '100%': { opacity: 1 },
+        },
+      },
     },
   },
   plugins: [],

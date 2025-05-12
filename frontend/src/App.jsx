@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { authService } from './services/auth';
 import MainContent from './components/MainContent';
 import Login from './components/Login';
@@ -8,6 +8,36 @@ import NewsCard from './components/NewsCard';
 import DailyBrief from './components/DailyBrief';
 import LandingPage from './components/LandingPage';
 import ChatInterface from './components/Chat/ChatInterface';
+
+// Wrapper component to conditionally render Header based on the route
+const AppContent = ({ isAuthenticated, handleLogout, selectedDate, handleDateChange }) => {
+    const location = useLocation();
+    const showHeader = location.pathname !== '/chat';
+    
+    if (!isAuthenticated) {
+        return <Login onLogin={() => window.location.reload()} />;
+    }
+    
+    return (
+        <>
+            {showHeader && (
+                <Header 
+                    onLogout={handleLogout}
+                    selectedDate={selectedDate}
+                    onDateChange={handleDateChange}
+                />
+            )}
+            <Routes>
+                <Route path="/" element={<LandingPage />} />
+                <Route path="/current-affairs" element={<MainContent />} />
+                <Route path="/news" element={<NewsCard />} />
+                <Route path="/daily-brief" element={<DailyBrief />} />
+                <Route path="/chat" element={<ChatInterface />} />
+                <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+        </>
+    );
+};
 
 function App() {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -61,25 +91,12 @@ function App() {
     return (
         <Router>
             <div className="App">
-                {isAuthenticated ? (
-                    <>
-                        <Header 
-                            onLogout={handleLogout}
-                            selectedDate={selectedDate}
-                            onDateChange={handleDateChange}
-                        />
-                        <Routes>
-                            <Route path="/" element={<LandingPage />} />
-                            <Route path="/current-affairs" element={<MainContent />} />
-                            <Route path="/news" element={<NewsCard />} />
-                            <Route path="/daily-brief" element={<DailyBrief />} />
-                            <Route path="/chat" element={<ChatInterface />} />
-                            <Route path="*" element={<Navigate to="/" replace />} />
-                        </Routes>
-                    </>
-                ) : (
-                    <Login onLogin={handleLogin} />
-                )}
+                <AppContent 
+                    isAuthenticated={isAuthenticated}
+                    handleLogout={handleLogout}
+                    selectedDate={selectedDate}
+                    handleDateChange={handleDateChange}
+                />
             </div>
         </Router>
     );
