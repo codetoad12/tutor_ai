@@ -11,13 +11,31 @@ import ChatInterface from './components/Chat/ChatInterface';
 
 function App() {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
     const [selectedDate, setSelectedDate] = useState(new Date());
 
     useEffect(() => {
         // Check if user is already logged in
-        if (authService.isAuthenticated()) {
-            setIsAuthenticated(true);
-        }
+        const checkAuthStatus = () => {
+            const isAuth = authService.isAuthenticated();
+            setIsAuthenticated(isAuth);
+            setIsLoading(false);
+        };
+        
+        checkAuthStatus();
+        
+        // Listen for storage events to handle authentication changes in other tabs
+        const handleStorageChange = (e) => {
+            if (e.key === 'token' || e.key === 'user') {
+                checkAuthStatus();
+            }
+        };
+        
+        window.addEventListener('storage', handleStorageChange);
+        
+        return () => {
+            window.removeEventListener('storage', handleStorageChange);
+        };
     }, []);
 
     const handleLogin = () => {
@@ -33,6 +51,12 @@ function App() {
         const date = event.target.value ? new Date(event.target.value) : null;
         setSelectedDate(date);
     };
+
+    if (isLoading) {
+        return <div className="flex items-center justify-center min-h-screen">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-accent-blue"></div>
+        </div>;
+    }
 
     return (
         <Router>

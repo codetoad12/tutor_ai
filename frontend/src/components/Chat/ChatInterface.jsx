@@ -65,6 +65,8 @@ const ChatInterface = () => {
                 } else if (availableSessions.length > 0) {
                     // Use the most recent session
                     sessionId = availableSessions[0].id.toString();
+                    // Update localStorage with the most recent session
+                    localStorage.setItem('current_chat_session', sessionId);
                 } else {
                     // Create a new session
                     const now = new Date();
@@ -74,12 +76,17 @@ const ChatInterface = () => {
                     
                     const newSession = await apiService.createSession(title);
                     sessionId = newSession.id.toString();
-                    setSessions(prev => [newSession, ...prev]);
+                    
+                    // Refresh the sessions list after creating a new session
+                    const updatedSessions = await apiService.getSessions();
+                    setSessions(updatedSessions);
+                    
+                    // Update localStorage with the new session
+                    localStorage.setItem('current_chat_session', sessionId);
                 }
                 
-                // Set current session and save to localStorage
+                // Set current session
                 setCurrentSessionId(sessionId);
-                localStorage.setItem('current_chat_session', sessionId);
                 
                 // Load messages for the session
                 await loadMessagesForSession(sessionId);
@@ -194,55 +201,46 @@ Try asking me a question about any UPSC topic!`
                 
                 setMessages(prev => [...prev, aiResponse]);
                 
-                // Update session in the list to show it's the most recent
-                setSessions(prev => {
-                    const updatedSession = prev.find(s => s.id.toString() === currentSessionId);
-                    if (updatedSession) {
-                        // Move this session to the top of the list
-                        const otherSessions = prev.filter(s => s.id.toString() !== currentSessionId);
-                        return [updatedSession, ...otherSessions];
-                    }
-                    return prev;
-                });
+                // Refresh the sessions list to ensure it shows the latest activity
+                const updatedSessions = await apiService.getSessions();
+                setSessions(updatedSessions);
             } else {
-                // Handle case where response has no AI response
-                throw new Error('No AI response received');
+                // Handle error if no response
+                setErrorState({
+                    message: 'No response received from the server',
+                    details: 'The server returned an empty response'
+                });
+                
+                // Add error message to chat
+                setMessages(prev => [...prev, {
+                    role: 'assistant',
+                    content: 'Sorry, I wasn\'t able to get a response. Please try again.',
+                    timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                    isError: true
+                }]);
             }
         } catch (error) {
             console.error('Error sending message:', error);
             
-            // Handle quota/rate limit errors
-            const errorMsg = error.toString().toLowerCase();
-            let errorContent = 'Sorry, there was an error processing your message. Please try again.';
+            // Check if it's a rate limit error
+            let errorMessage = 'Sorry, there was an error processing your request.';
             
-            // Check for specific error messages
-            if (errorMsg.includes('quota') || errorMsg.includes('rate limit') || errorMsg.includes('429')) {
-                errorContent = `## Service Temporarily Unavailable
-
-I apologize, but the AI service is currently experiencing high demand and has reached its quota limit. 
-
-**What you can do:**
-- Try again in a few minutes
-- Your message has been saved, but the AI couldn't generate a response at this time
-- The system admin may need to upgrade the API quota for uninterrupted service`;
-
-                setErrorState({
-                    message: 'AI quota limit reached',
-                    details: error.toString(),
-                    isQuotaError: true
-                });
-            } else {
-                setErrorState({
-                    message: 'Error sending message',
-                    details: error.toString()
-                });
+            if (error.message && error.message.includes('429')) {
+                errorMessage = 'Rate limit exceeded. Please wait a moment before trying again.';
             }
             
+            setErrorState({
+                message: 'Failed to send message',
+                details: error.toString()
+            });
+            
+            // Add error message to chat
             setMessages(prev => [...prev, {
                 role: 'assistant',
-                content: errorContent,
+                content: errorMessage,
                 timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-                isError: true
+                isError: true,
+                isRateLimit: error.message && error.message.includes('429')
             }]);
         } finally {
             setLoading(false);
@@ -265,8 +263,9 @@ I apologize, but the AI service is currently experiencing high demand and has re
                 // Create new session via API
                 const newSession = await apiService.createSession(title);
                 
-                // Update session list
-                setSessions(prev => [newSession, ...prev]);
+                // Fetch the latest sessions list to ensure it's up to date
+                const updatedSessions = await apiService.getSessions();
+                setSessions(updatedSessions);
                 
                 // Update current session
                 setCurrentSessionId(newSession.id.toString());
@@ -419,8 +418,14 @@ Try asking me a question about any UPSC topic!`,
             try {
                 setLoading(true);
                 setErrorState(null);
+                
+                // Set current session ID
                 setCurrentSessionId(sessionId);
                 localStorage.setItem('current_chat_session', sessionId);
+                
+                // Refresh sessions list to ensure it's up to date
+                const updatedSessions = await apiService.getSessions();
+                setSessions(updatedSessions);
                 
                 // Load messages for selected session
                 await loadMessagesForSession(sessionId);

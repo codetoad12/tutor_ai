@@ -17,10 +17,7 @@ function Login({ onLogin }) {
     setLoading(true);
 
     try {
-      await authService.login(credentials.username, credentials.password);
-      if (credentials.rememberMe) {
-        localStorage.setItem('rememberMe', 'true');
-      }
+      await authService.login(credentials.username, credentials.password, credentials.rememberMe);
       onLogin();
     } catch (err) {
       setError(err.message || 'Login failed. Please check your credentials and try again.');

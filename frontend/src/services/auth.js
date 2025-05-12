@@ -32,7 +32,13 @@ class AuthService {
                 // If remember me is not enabled, use sessionStorage
                 this.token = sessionStorage.getItem('token');
                 const userStr = sessionStorage.getItem('user');
-                this.user = userStr ? JSON.parse(userStr) : null;
+                try {
+                    this.user = userStr ? JSON.parse(userStr) : null;
+                } catch (e) {
+                    console.error('Error parsing user data from sessionStorage:', e);
+                    this.user = null;
+                    sessionStorage.removeItem('user');
+                }
             }
         } catch (e) {
             console.error('Error initializing AuthService:', e);
@@ -79,6 +85,9 @@ class AuthService {
             } else {
                 sessionStorage.setItem('token', this.token);
                 sessionStorage.setItem('user', JSON.stringify(this.user));
+                // Make sure to clear localStorage to avoid conflicts
+                localStorage.removeItem('token');
+                localStorage.removeItem('user');
                 localStorage.removeItem('rememberMe');
             }
 
