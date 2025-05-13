@@ -1,7 +1,9 @@
 import React from 'react';
-import { FaSignOutAlt, FaCalendarAlt, FaNewspaper, FaSearch } from 'react-icons/fa';
+import { Link, useLocation } from 'react-router-dom';
+import { FaSignOutAlt, FaCalendarAlt, FaNewspaper, FaSearch, FaHome, FaBook, FaChartLine, FaComments } from 'react-icons/fa';
 
 function Header({ onLogout, selectedDate, onDateChange }) {
+  const location = useLocation();
   const today = new Date();
   const formattedDate = today.toLocaleDateString('en-US', {
     weekday: 'long',
@@ -9,6 +11,8 @@ function Header({ onLogout, selectedDate, onDateChange }) {
     month: 'long',
     day: 'numeric'
   });
+
+  const isActive = (path) => location.pathname === path;
 
   return (
     <header className="bg-white border-b border-gray-200 shadow-md sticky top-0 z-10">
@@ -53,14 +57,63 @@ function Header({ onLogout, selectedDate, onDateChange }) {
         
         {/* Main Header */}
         <div className="flex flex-col items-center justify-center py-6 border-t border-gray-200">
-          <div className="text-center">
+          <div className="text-center mb-6">
             <h1 className="text-3xl font-serif font-bold tracking-tight text-blue-700">
-              The Daily Brief
+              <Link to="/">AI Tutor</Link>
             </h1>
             <p className="text-gray-600 text-sm mt-2 italic">
               Curated Current Affairs for UPSC Aspirants
             </p>
           </div>
+          
+          {/* Navigation */}
+          <nav className="flex items-center justify-center space-x-8">
+            <Link 
+              to="/" 
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
+                isActive('/') ? 'bg-blue-100 text-blue-700' : 'text-gray-600 hover:bg-blue-50'
+              }`}
+            >
+              <FaHome />
+              <span>Home</span>
+            </Link>
+            <Link 
+              to="/current-affairs" 
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
+                isActive('/current-affairs') ? 'bg-purple-100 text-purple-700' : 'text-gray-600 hover:bg-blue-50'
+              }`}
+            >
+              <FaChartLine />
+              <span>Current Affairs</span>
+            </Link>
+            <Link 
+              to="/news" 
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
+                isActive('/news') ? 'bg-green-100 text-green-700' : 'text-gray-600 hover:bg-blue-50'
+              }`}
+            >
+              <FaNewspaper />
+              <span>News</span>
+            </Link>
+            <Link 
+              to="/daily-brief" 
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
+                isActive('/daily-brief') ? 'bg-blue-100 text-blue-700' : 'text-gray-600 hover:bg-blue-50'
+              }`}
+            >
+              <FaBook />
+              <span>Daily Brief</span>
+            </Link>
+            <Link 
+              to="/chat" 
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
+                isActive('/chat') ? 'bg-amber-100 text-amber-700' : 'text-gray-600 hover:bg-blue-50'
+              }`}
+            >
+              <FaComments />
+              <span>Chat</span>
+            </Link>
+          </nav>
         </div>
       </div>
     </header>

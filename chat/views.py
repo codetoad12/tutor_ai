@@ -121,7 +121,7 @@ class MessageListCreateView(APIView):
                 # Create response object
                 response_data = {
                     'response_text': ai_response['text'],
-                    'model_name': 'gemini-1.5-pro'
+                    'model_name': 'gemini-1.5-flash'
                 }
                 
                 # Add optional fields if they exist

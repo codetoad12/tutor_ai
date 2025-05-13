@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { authService } from '../services/auth';
 import NewsCard from './NewsCard';
-import Header from './Header';
 import { FaBookmark, FaRegBookmark, FaChartLine, FaQuestionCircle, FaSearch, FaCalendarAlt } from 'react-icons/fa';
 
 function MainContent() {
@@ -125,19 +124,8 @@ function MainContent() {
     });
   };
 
-  const handleLogout = () => {
-    authService.logout();
-  };
-
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <Header
-        onLogout={handleLogout}
-        selectedDate={selectedDate}
-        onDateChange={handleDateChange}
-      />
-
       {/* Search Bar */}
       <div className="bg-white border-b border-gray-200 shadow-sm">
         <div className="container mx-auto px-4 py-6">
@@ -258,18 +246,16 @@ function MainContent() {
                     ))}
                   </>
                 ) : (
-                  <div className="bg-white border border-gray-200 rounded-lg p-8 text-center">
-                    <p className="text-gray-500 text-base tracking-tight">
-                      No current affairs found matching your filters.
-                    </p>
+                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-8 text-center">
+                    <p className="text-gray-700 text-lg mb-4">No current affairs found with the current filters.</p>
                     <button
                       onClick={() => {
                         setFilters({ category: '', search: '' });
                         setSelectedDate(null);
                       }}
-                      className="mt-4 px-4 py-2 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-colors"
+                      className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 transition-colors"
                     >
-                      Clear all filters
+                      Clear All Filters
                     </button>
                   </div>
                 )}
@@ -278,164 +264,49 @@ function MainContent() {
           </div>
 
           {/* Sidebar */}
-          <div className="order-1 lg:order-2 lg:col-span-4 sticky top-24">
-            <div>
-              {/* Weekly Quiz Button */}
-              <div style={{ marginBottom: '40px' }} className="bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden">
-                <div className="p-6 text-center">
-                  <h3 className="text-lg font-serif font-semibold text-blue-700 mb-3">Test Your Knowledge</h3>
-                  <p className="text-sm text-gray-600 mx-auto">Challenge yourself with questions on recent current affairs</p>
-                </div>
-                <button className="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-3 hover:from-blue-700 hover:to-blue-800 transition-all duration-300 flex items-center justify-center gap-3 text-sm font-medium tracking-wide group">
-                  <FaQuestionCircle className="text-base group-hover:scale-110 transition-transform" />
-                  <span>Start Weekly Quiz</span>
-                </button>
-              </div>
+          <div className="order-1 lg:order-2 lg:col-span-4">
+            {/* Categories */}
+            <div className="bg-white border border-gray-200 rounded-lg p-6 mb-6 shadow-sm">
+              <h3 className="text-lg font-medium text-gray-800 mb-4 font-serif">Categories</h3>
+              <ul className="space-y-2">
+                {categories.map(category => (
+                  <li key={category} className="group">
+                    <button
+                      onClick={() => setFilters(prev => ({ ...prev, category }))}
+                      className={`w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                        filters.category === category 
+                          ? 'bg-blue-50 text-blue-700 border border-blue-100' 
+                          : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                      }`}
+                    >
+                      {category}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
 
-              {/* Trending Topics */}
-              <div style={{ marginBottom: '40px' }} className="bg-white border border-gray-200 rounded-xl shadow-sm p-8 hover:shadow-md transition-all duration-300">
-                <h2 className="text-xl font-serif font-semibold text-blue-700 tracking-tight mb-5 flex items-center">
-                  <FaChartLine className="text-blue-700 mr-3" />
-                  <span>Trending Topics</span>
-                </h2>
-                
-                <div className="space-y-4">
-                  {/* Topics by popularity */}
-                  <div>
-                    <p className="text-sm font-medium text-gray-500 mb-3">By Popularity</p>
-                    <div className="flex flex-wrap gap-3">
-                      {trendingTopics
-                        .sort((a, b) => b.count - a.count)
-                        .slice(0, 5)
-                        .map((topic, index) => {
-                          // Calculate intensity for the most popular topics
-                          const maxCount = Math.max(...trendingTopics.map(t => t.count));
-                          const intensity = (topic.count / maxCount) * 100;
-                          const isHot = intensity > 70;
-                          
-                          return (
-                            <span
-                              key={index}
-                              className={`px-3 py-1.5 bg-blue-50 text-blue-700 rounded-full text-sm hover:bg-blue-100 cursor-pointer transition-colors tracking-tight border border-blue-100 flex items-center ${isHot ? 'border-red-200 bg-gradient-to-r from-blue-50 to-red-50' : ''}`}
-                              onClick={() => setFilters(prev => ({ ...prev, search: topic.name }))}
-                            >
-                              <span>{topic.name}</span>
-                              <span className={`ml-2 ${isHot ? 'bg-gradient-to-r from-blue-700 to-red-600' : 'bg-blue-700'} text-white text-xs rounded-full w-5 h-5 flex items-center justify-center`}>{topic.count}</span>
-                              {isHot && <span className="ml-1 text-red-500 text-xs">🔥</span>}
-                            </span>
-                          );
-                        })
-                      }
-                    </div>
-                  </div>
-                  
-                  {/* Categories */}
-                  <div className="pt-4 border-t border-gray-100">
-                    <p className="text-sm font-medium text-gray-500 mb-3">By Category</p>
-                    <div className="flex flex-wrap gap-3">
-                      {categories.map((category, index) => (
-                        <span
-                          key={index}
-                          className={`px-3 py-1.5 rounded-full text-sm cursor-pointer transition-colors tracking-tight border ${
-                            filters.category === category 
-                              ? 'bg-blue-700 text-white border-blue-700' 
-                              : 'bg-gray-50 text-gray-700 border-gray-200 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-100'
-                          }`}
-                          onClick={() => setFilters(prev => ({ 
-                            ...prev, 
-                            category: prev.category === category ? '' : category
-                          }))}
-                        >
-                          {category}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                </div>
+            {/* Trending Topics */}
+            <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
+              <div className="flex items-center gap-2 mb-4">
+                <FaChartLine className="text-red-600" />
+                <h3 className="text-lg font-medium text-gray-800 font-serif">Trending Topics</h3>
               </div>
-
-              {/* Bookmarks Section */}
-              {bookmarkedAffairs.length > 0 && (
-                <div style={{ marginBottom: '40px' }} className="bg-white border border-gray-200 rounded-lg shadow-sm p-8 hover:shadow-md transition-all duration-300">
-                  <h2 className="text-xl font-serif font-semibold text-blue-700 tracking-tight mb-5 flex items-center">
-                    <FaBookmark className="text-blue-700 mr-3" />
-                    <span>Your Bookmarks</span>
-                  </h2>
-                  <div className="space-y-3">
-                    {bookmarkedAffairs.map(affair => (
-                      <div
-                        key={affair.id}
-                        className="p-4 hover:bg-blue-50 rounded-lg cursor-pointer border border-gray-100 transition-colors duration-200 transform hover:-translate-y-1 hover:shadow-sm"
-                        onClick={() => {
-                          const element = document.getElementById(`affair-${affair.id}`);
-                          if (element) {
-                            element.scrollIntoView({ behavior: 'smooth' });
-                          }
-                        }}
-                      >
-                        <p className="text-base font-medium text-gray-900 tracking-tight line-clamp-2 font-serif">{affair.title}</p>
-                        <div className="flex items-center justify-between mt-3">
-                          <span className="text-sm text-gray-500 tracking-tight flex items-center">
-                            <FaCalendarAlt className="mr-1 text-blue-600 text-xs" />
-                            {new Date(affair.date).toLocaleDateString('en-US', {
-                              month: 'short',
-                              day: 'numeric'
-                            })}
-                          </span>
-                          <span className="px-2 py-0.5 bg-blue-50 text-blue-700 rounded-full text-xs border border-blue-100">
-                            {affair.category}
-                          </span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Category Filters */}
-              <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-8 hover:shadow-md transition-all duration-300">
-                <h2 className="text-xl font-serif font-semibold text-blue-700 tracking-tight mb-5 flex items-center">
-                  <FaSearch className="text-blue-700 mr-3" />
-                  <span>Refine Search</span>
-                </h2>
-                <div className="space-y-5">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">By Category</label>
-                    <div className="space-y-3">
-                      {categories.map(category => (
-                        <label key={category} className="flex items-center space-x-3 group cursor-pointer">
-                          <input
-                            type="checkbox"
-                            name="category"
-                            value={category}
-                            checked={filters.category === category}
-                            onChange={(e) => setFilters(prev => ({
-                              ...prev,
-                              category: e.target.checked ? category : ''
-                            }))}
-                            className="rounded border-gray-300 text-blue-700 focus:ring-blue-500 h-4 w-4"
-                          />
-                          <span className="text-base text-gray-700 tracking-tight group-hover:text-blue-700 transition-colors">{category}</span>
-                        </label>
-                      ))}
-                    </div>
-                  </div>
-                  
-                  {(filters.category || filters.search || selectedDate) && (
-                    <div className="pt-4 border-t border-gray-100">
-                      <button
-                        onClick={() => {
-                          setFilters({ category: '', search: '' });
-                          setSelectedDate(null);
-                        }}
-                        className="w-full px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors flex items-center justify-center gap-2"
-                      >
-                        <span>Clear All Filters</span>
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </div>
+              <ul className="space-y-3">
+                {trendingTopics.map(topic => (
+                  <li key={topic.name} className="group">
+                    <button 
+                      onClick={() => setFilters(prev => ({ ...prev, search: topic.name }))}
+                      className="w-full flex items-center justify-between px-3 py-2 bg-gray-50 hover:bg-blue-50 rounded-lg group-hover:shadow-sm transition-all"
+                    >
+                      <span className="text-sm text-gray-700 group-hover:text-blue-700">{topic.name}</span>
+                      <span className="bg-white px-2 py-0.5 rounded-full text-xs font-medium text-gray-500 border border-gray-200 group-hover:border-blue-200 group-hover:text-blue-600">
+                        {topic.count}
+                      </span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
             </div>
           </div>
         </div>
