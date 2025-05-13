@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { marked } from 'marked';
-import { FaPlus, FaTrash, FaDownload, FaFileAlt, FaFilePdf, FaRegClock, FaExclamationTriangle, FaArrowLeft } from 'react-icons/fa';
+import { FaPlus, FaTrash, FaDownload, FaFileAlt, FaFilePdf, FaRegClock, FaExclamationTriangle, FaArrowLeft, FaChalkboardTeacher, FaEraser, FaBook } from 'react-icons/fa';
 import { apiService } from '../../services/api';
 import { authService } from '../../services/auth';
+import './ChatInterface.css'; // We'll create this CSS file for custom styles
 
 // Configure marked for safe rendering
 marked.setOptions({
@@ -122,16 +123,19 @@ const ChatInterface = () => {
             if (sessionMessages.length === 0) {
                 setMessages([{
                     role: 'assistant',
-                    content: `# Welcome to AI Tutor!
+                    content: `# Welcome to your UPSC Virtual Classroom!
 
-I'm your **UPSC exam mentor and tutor**. Here's how I can help you:
+I'm your **UPSC exam mentor and teacher**. This blackboard is our space to explore and learn together.
 
-- Answer questions about **UPSC exam preparation**
-- Explain complex topics in simple terms
-- Provide study strategies and exam tips
-- Share important information about the syllabus
+Let me help you with:
 
-Try asking me a question about any UPSC topic!`
+- Explaining **complex UPSC topics** in clear, simple terms
+- Providing **structured study strategies** and exam techniques
+- Breaking down the **complete UPSC syllabus** into manageable segments
+- Offering **practice questions** and detailed feedback
+
+What topic would you like to explore today?`,
+                    timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
                 }]);
             } else {
                 // Transform messages from API format to our component format
@@ -274,16 +278,18 @@ Try asking me a question about any UPSC topic!`
                 // Clear messages and add welcome message
                 setMessages([{
                     role: 'assistant',
-                    content: `# Welcome to AI Tutor!
+                    content: `# Welcome to your UPSC Virtual Classroom!
 
-I'm your **UPSC exam mentor and tutor**. Here's how I can help you:
+I'm your **UPSC exam mentor and teacher**. This blackboard is our space to explore and learn together.
 
-- Answer questions about **UPSC exam preparation**
-- Explain complex topics in simple terms
-- Provide study strategies and exam tips
-- Share important information about the syllabus
+Let me help you with:
 
-Try asking me a question about any UPSC topic!`,
+- Explaining **complex UPSC topics** in clear, simple terms
+- Providing **structured study strategies** and exam techniques
+- Breaking down the **complete UPSC syllabus** into manageable segments
+- Offering **practice questions** and detailed feedback
+
+What topic would you like to explore today?`,
                     timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
                 }]);
             } catch (error) {
@@ -309,16 +315,18 @@ Try asking me a question about any UPSC topic!`,
         if (window.confirm('Are you sure you want to clear the chat? This will only clear the messages from your screen, not from the server.')) {
             setMessages([{
                 role: 'assistant',
-                content: `# Welcome to AI Tutor!
+                content: `# Welcome to your UPSC Virtual Classroom!
 
-I'm your **UPSC exam mentor and tutor**. Here's how I can help you:
+I'm your **UPSC exam mentor and teacher**. This blackboard is our space to explore and learn together.
 
-- Answer questions about **UPSC exam preparation**
-- Explain complex topics in simple terms
-- Provide study strategies and exam tips
-- Share important information about the syllabus
+Let me help you with:
 
-Try asking me a question about any UPSC topic!`,
+- Explaining **complex UPSC topics** in clear, simple terms
+- Providing **structured study strategies** and exam techniques
+- Breaking down the **complete UPSC syllabus** into manageable segments
+- Offering **practice questions** and detailed feedback
+
+What topic would you like to explore today?`,
                 timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
             }]);
         }
@@ -475,51 +483,49 @@ Try asking me a question about any UPSC topic!`,
 
     if (initialLoading) {
         return (
-            <div className="flex h-screen items-center justify-center bg-gray-100">
+            <div className="flex h-screen items-center justify-center bg-blackboard">
                 <div className="text-center">
-                    <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-700 mb-4"></div>
-                    <p className="text-gray-600">Loading chat interface...</p>
+                    <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-chalk mb-4"></div>
+                    <p className="text-chalk font-chalk">Loading virtual classroom...</p>
                 </div>
             </div>
         );
     }
 
     return (
-        <div className="flex h-screen w-full overflow-hidden bg-gray-100">
+        <div className="flex h-screen w-full overflow-hidden bg-blackboard">
             {/* Sidebar */}
-            <div id="sidebar" className="w-64 bg-gray-800 text-white p-4 flex flex-col h-screen shadow-lg fixed left-0 top-0 z-10 overflow-y-auto">
+            <div id="sidebar" className="w-64 bg-sidebar-dark text-chalk p-4 flex flex-col h-screen shadow-lg fixed left-0 top-0 z-10 overflow-y-auto font-chalk">
                 {/* New Chat Button */}
                 <button 
                     onClick={startNewChat} 
-                    className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg mb-6 transition-colors"
+                    className="flex items-center gap-2 bg-green-800 hover:bg-green-700 text-chalk px-4 py-2 rounded-lg mb-6 transition-colors border border-chalk-dim"
                     disabled={loading}
                 >
-                    <FaPlus />
-                    <span>New Chat</span>
+                    <FaChalkboardTeacher />
+                    <span>New Lesson</span>
                 </button>
                 
                 {/* Chat History */}
                 <div className="mb-4 overflow-y-auto">
-                    <h3 className="text-gray-400 uppercase text-xs font-semibold tracking-wider mb-2">Chat History</h3>
-                    <div id="chatHistory" className="space-y-1 max-h-80 overflow-y-auto pr-1">
+                    <h3 className="text-chalk-dim uppercase text-xs font-semibold tracking-wider mb-2">Lesson History</h3>
+                    <div id="chatHistory" className="space-y-1 max-h-80 overflow-y-auto pr-1 scrollbar-chalk">
                         {sessions.length > 0 ? (
                             sessions.map(session => (
                                 <div 
                                     key={session.id} 
-                                    className={`chat-history-item px-3 py-2 ${currentSessionId === session.id.toString() ? 'bg-gray-700' : ''} cursor-pointer hover:bg-gray-700 transition-colors rounded`}
+                                    className={`chat-history-item px-3 py-2 ${currentSessionId === session.id.toString() ? 'bg-green-900' : ''} cursor-pointer hover:bg-green-900 transition-colors rounded border-l-2 ${currentSessionId === session.id.toString() ? 'border-chalk' : 'border-transparent'}`}
                                     onClick={() => switchSession(session.id.toString())}
                                 >
                                     <div className="flex items-center w-full">
-                                        <span className="mr-2 text-gray-400 flex-shrink-0">
-                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
-                                            </svg>
+                                        <span className="mr-2 text-chalk-dim flex-shrink-0">
+                                            <FaBook className="h-4 w-4" />
                                         </span>
                                         <div className="flex-1 overflow-hidden">
                                             <div className="truncate text-sm font-medium">
                                                 {session.title.split(' - ')[1] || session.title}
                                             </div>
-                                            <div className="truncate text-xs text-gray-400">
+                                            <div className="truncate text-xs text-chalk-dim">
                                                 UPSC study session
                                             </div>
                                         </div>
@@ -527,8 +533,8 @@ Try asking me a question about any UPSC topic!`,
                                 </div>
                             ))
                         ) : (
-                            <div className="text-sm text-gray-400 italic px-2">
-                                Your previous conversations will appear here
+                            <div className="text-sm text-chalk-dim italic px-2">
+                                Your previous lessons will appear here
                             </div>
                         )}
                     </div>
@@ -536,43 +542,43 @@ Try asking me a question about any UPSC topic!`,
                 
                 {/* Actions */}
                 <div className="mt-auto">
-                    <h3 className="text-gray-400 uppercase text-xs font-semibold tracking-wider mb-2">Actions</h3>
+                    <h3 className="text-chalk-dim uppercase text-xs font-semibold tracking-wider mb-2">Actions</h3>
                     <div className="space-y-1">
                         <button 
                             onClick={clearChat}
-                            className="w-full flex items-center gap-2 px-3 py-2 hover:bg-gray-700 rounded transition-colors text-sm"
+                            className="w-full flex items-center gap-2 px-3 py-2 hover:bg-green-900 rounded transition-colors text-sm"
                             disabled={loading}
                         >
-                            <FaTrash className="text-gray-400" />
-                            <span>Clear Chat</span>
+                            <FaEraser className="text-chalk-dim" />
+                            <span>Clear Board</span>
                         </button>
                         
                         <div className="relative">
                             <button 
                                 onClick={toggleExportDropdown}
-                                className="w-full flex items-center gap-2 px-3 py-2 hover:bg-gray-700 rounded transition-colors text-sm"
+                                className="w-full flex items-center gap-2 px-3 py-2 hover:bg-green-900 rounded transition-colors text-sm"
                                 disabled={loading}
                             >
-                                <FaDownload className="text-gray-400" />
+                                <FaDownload className="text-chalk-dim" />
                                 <span>Export Notes</span>
                             </button>
                             
                             {exportDropdownOpen && (
-                                <div className="absolute bottom-full left-0 mb-1 w-full bg-gray-700 rounded shadow-lg overflow-hidden">
+                                <div className="absolute bottom-full left-0 mb-1 w-full bg-green-900 rounded shadow-lg overflow-hidden border border-chalk-dim">
                                     <button 
                                         onClick={() => {
                                             toggleExportDropdown();
                                             exportChatAsMarkdown();
                                         }}
-                                        className="w-full flex items-center gap-2 px-3 py-2 hover:bg-gray-600 text-sm"
+                                        className="w-full flex items-center gap-2 px-3 py-2 hover:bg-green-800 text-sm"
                                     >
-                                        <FaFileAlt className="text-gray-400" />
+                                        <FaFileAlt className="text-chalk-dim" />
                                         <span>As Markdown</span>
                                     </button>
                                     <button 
-                                        className="w-full flex items-center gap-2 px-3 py-2 hover:bg-gray-600 text-sm"
+                                        className="w-full flex items-center gap-2 px-3 py-2 hover:bg-green-800 text-sm"
                                     >
-                                        <FaFilePdf className="text-gray-400" />
+                                        <FaFilePdf className="text-chalk-dim" />
                                         <span>As PDF</span>
                                     </button>
                                 </div>
@@ -582,13 +588,13 @@ Try asking me a question about any UPSC topic!`,
                 </div>
             </div>
             
-            {/* Main Chat Content */}
-            <div className="w-full ml-64 h-screen flex flex-col">
+            {/* Main Chat Content - Using absolute right-0 to ensure it fills all available space */}
+            <div className="absolute left-64 right-0 h-screen flex flex-col bg-blackboard">
                 {/* Top Navigation Bar */}
-                <div className="h-14 bg-white border-b border-gray-200 flex items-center justify-between px-4 w-full shadow-sm">
+                <div className="h-14 bg-sidebar-dark border-b border-chalk-dim flex items-center justify-between px-4 w-full shadow-md">
                     <button 
                         onClick={navigateToMain}
-                        className="flex items-center text-gray-700 hover:text-blue-600 transition-colors"
+                        className="flex items-center text-chalk hover:text-white transition-colors font-chalk"
                     >
                         <FaArrowLeft className="mr-2" />
                         <span>Back to Dashboard</span>
@@ -596,24 +602,24 @@ Try asking me a question about any UPSC topic!`,
                     
                     {/* Session title display */}
                     {currentSessionId && sessions.length > 0 && (
-                        <div className="text-gray-600 font-medium">
-                            {sessions.find(s => s.id.toString() === currentSessionId)?.title || 'UPSC Chat Session'}
+                        <div className="text-chalk font-chalk font-medium">
+                            {sessions.find(s => s.id.toString() === currentSessionId)?.title || 'UPSC Classroom Session'}
                         </div>
                     )}
                 </div>
                 
                 {/* Error Banner (if applicable) */}
                 {errorState && errorState.isQuotaError && (
-                    <div className="bg-amber-50 border-l-4 border-amber-500 p-3 mx-auto my-2 w-full max-w-3xl shadow-sm">
+                    <div className="bg-yellow-900 border-l-4 border-yellow-600 p-3 mx-auto my-2 w-full max-w-3xl shadow-sm">
                         <div className="flex items-center">
-                            <div className="text-amber-500 mr-3">
+                            <div className="text-yellow-500 mr-3">
                                 <FaExclamationTriangle />
                             </div>
                             <div>
-                                <p className="text-sm font-medium text-amber-700">
+                                <p className="text-sm font-medium text-yellow-500 font-chalk">
                                     API Quota Limit Reached
                                 </p>
-                                <p className="text-xs text-amber-600">
+                                <p className="text-xs text-yellow-400 font-chalk">
                                     The AI service is currently at capacity. Messages can be sent but responses may be delayed.
                                 </p>
                             </div>
@@ -624,10 +630,12 @@ Try asking me a question about any UPSC topic!`,
                 {/* Messages Container */}
                 <div 
                     ref={chatMessagesRef}
-                    className="flex-1 overflow-y-auto px-4 py-6" 
+                    className="flex-1 overflow-y-auto px-4 py-6 scrollbar-chalk w-full" 
                     style={{ 
-                        backgroundColor: '#FAFAFA',
-                        height: 'calc(100vh - 144px)' // Subtract top bar and input heights
+                        backgroundColor: 'var(--blackboard)', /* Use the CSS variable */
+                        height: 'calc(100vh - 144px)', /* Subtract top bar and input heights */
+                        backgroundImage: 'radial-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 0)',
+                        backgroundSize: '30px 30px',
                     }}
                 >
                     <div className="max-w-5xl mx-auto space-y-6 pb-24">
@@ -637,30 +645,30 @@ Try asking me a question about any UPSC topic!`,
                                 className={`message flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
                             >
                                 {message.role === 'assistant' && (
-                                    <div className="flex items-center justify-center h-8 w-8 rounded-full bg-amber-500 text-white mr-3 flex-shrink-0">
-                                        🤖
+                                    <div className="flex items-center justify-center h-8 w-8 rounded-full bg-yellow-700 text-chalk mr-3 flex-shrink-0">
+                                        👨‍🏫
                                     </div>
                                 )}
                                 
-                                <div className={`message-content max-w-3xl ${message.role === 'user' ? 'ml-12' : 'mr-12'}`}>
+                                <div className={`message-content max-w-3xl ${message.role === 'user' ? 'ml-12' : 'mr-12'} ${message.role === 'assistant' ? 'chalk-text' : ''}`}>
                                     <div 
-                                        className={`p-4 rounded-lg shadow-sm ${
+                                        className={`p-4 rounded-lg ${
                                             message.role === 'user' 
-                                                ? 'bg-blue-600 text-white rounded-tr-none' 
-                                                : 'bg-white text-gray-800 rounded-tl-none border-l-4 border-l-gray-200'
-                                        } ${message.isError ? 'border-red-300 bg-red-50 text-red-700' : ''}`}
+                                                ? 'bg-blue-900 text-chalk rounded-tr-none chalk-student-bubble' 
+                                                : 'bg-transparent text-chalk rounded-tl-none border-l-4 border-l-yellow-600 chalk-teacher-text'
+                                        } ${message.isError ? 'border-red-500 bg-red-900 text-red-200' : ''}`}
                                     >
                                         {message.role === 'user' ? (
                                             message.content
                                         ) : (
                                             <div 
-                                                className="markdown-content" 
+                                                className="markdown-content chalk-text" 
                                                 dangerouslySetInnerHTML={{ __html: marked.parse(message.content) }}
                                             />
                                         )}
                                     </div>
                                     
-                                    <div className="mt-1 text-xs text-gray-500 flex">
+                                    <div className="mt-1 text-xs text-chalk-dim flex font-chalk">
                                         <span className="mr-2">{message.timestamp || new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                                         {message.model && <span className="opacity-75 italic">{message.model}</span>}
                                     </div>
@@ -669,7 +677,7 @@ Try asking me a question about any UPSC topic!`,
                                     {message.isError && message.role === 'assistant' && index === messages.length - 1 && (
                                         <button 
                                             onClick={retryLastMessage}
-                                            className="mt-2 text-xs bg-blue-50 text-blue-700 px-3 py-1 rounded hover:bg-blue-100 transition-colors"
+                                            className="mt-2 text-xs bg-blue-900 text-chalk px-3 py-1 rounded hover:bg-blue-800 transition-colors font-chalk"
                                         >
                                             Retry
                                         </button>
@@ -677,8 +685,8 @@ Try asking me a question about any UPSC topic!`,
                                 </div>
                                 
                                 {message.role === 'user' && (
-                                    <div className="flex items-center justify-center h-8 w-8 rounded-full bg-blue-600 text-white ml-3 flex-shrink-0">
-                                        👤
+                                    <div className="flex items-center justify-center h-8 w-8 rounded-full bg-blue-900 text-chalk ml-3 flex-shrink-0">
+                                        👨‍🎓
                                     </div>
                                 )}
                             </div>
@@ -687,13 +695,13 @@ Try asking me a question about any UPSC topic!`,
                         {/* Loading Indicator */}
                         {loading && (
                             <div className="flex items-start">
-                                <div className="flex items-center justify-center h-8 w-8 rounded-full bg-amber-500 text-white mr-3">
-                                    🤖
+                                <div className="flex items-center justify-center h-8 w-8 rounded-full bg-yellow-700 text-chalk mr-3">
+                                    👨‍🏫
                                 </div>
-                                <div className="bg-white p-4 rounded-lg shadow-sm rounded-tl-none flex items-center space-x-2 min-w-[60px]">
-                                    <div className="w-2 h-2 rounded-full bg-gray-300 animate-pulse"></div>
-                                    <div className="w-2 h-2 rounded-full bg-gray-300 animate-pulse delay-150"></div>
-                                    <div className="w-2 h-2 rounded-full bg-gray-300 animate-pulse delay-300"></div>
+                                <div className="bg-transparent p-4 rounded-lg rounded-tl-none flex items-center space-x-2 min-w-[60px] border-l-4 border-l-yellow-600">
+                                    <div className="w-2 h-2 rounded-full bg-chalk animate-pulse"></div>
+                                    <div className="w-2 h-2 rounded-full bg-chalk animate-pulse delay-150"></div>
+                                    <div className="w-2 h-2 rounded-full bg-chalk animate-pulse delay-300"></div>
                                 </div>
                             </div>
                         )}
@@ -704,15 +712,15 @@ Try asking me a question about any UPSC topic!`,
                 </div>
                 
                 {/* Message Input */}
-                <div className="border-t border-gray-200 bg-white p-4">
+                <div className="border-t border-chalk-dim bg-sidebar-dark p-4 w-full">
                     <div className="max-w-5xl mx-auto">
                         <form onSubmit={handleSendMessage} className="flex">
-                            <div className="flex-1 border border-gray-300 rounded-l-lg overflow-hidden focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500">
+                            <div className="flex-1 border border-chalk-dim rounded-l-lg overflow-hidden focus-within:ring-2 focus-within:ring-yellow-600 focus-within:border-yellow-600 chalk-input-container">
                                 <textarea
                                     value={input}
                                     onChange={(e) => setInput(e.target.value)}
                                     placeholder="Ask your question about UPSC exam preparation..."
-                                    className="w-full p-3 resize-none outline-none min-h-[60px]"
+                                    className="w-full p-3 resize-none outline-none min-h-[60px] bg-dark-green text-chalk placeholder-chalk-dim font-chalk"
                                     disabled={loading}
                                     onKeyDown={(e) => {
                                         if (e.key === 'Enter' && !e.shiftKey) {
@@ -725,16 +733,16 @@ Try asking me a question about any UPSC topic!`,
                             <button
                                 type="submit"
                                 disabled={loading || !input.trim()}
-                                className="bg-blue-600 hover:bg-blue-700 text-white px-6 rounded-r-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="bg-yellow-800 hover:bg-yellow-700 text-chalk px-6 rounded-r-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-chalk border border-chalk-dim"
                             >
-                                {loading ? 'Sending...' : 'Send'}
+                                {loading ? 'Sending...' : 'Ask'}
                             </button>
                         </form>
                         
                         {/* API status indicator */}
                         {errorState && errorState.isQuotaError && (
-                            <div className="mt-2 text-xs text-amber-700 flex items-center">
-                                <div className="w-2 h-2 bg-amber-500 rounded-full mr-2"></div>
+                            <div className="mt-2 text-xs text-yellow-500 flex items-center font-chalk">
+                                <div className="w-2 h-2 bg-yellow-600 rounded-full mr-2"></div>
                                 AI service at capacity - responses may be delayed
                             </div>
                         )}

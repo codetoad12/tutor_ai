@@ -1,0 +1,246 @@
+/* Import more readable fonts while keeping a classroom feel */
+@import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@400;600;700&display=swap');
+
+/* Color variables */
+:root {
+  --blackboard: #0f2218;
+  --blackboard-alt: #1a322a;
+  --chalk: rgba(255, 255, 255, 0.9);
+  --chalk-dim: rgba(255, 255, 255, 0.6);
+  --chalk-accent: #fffce8;
+  --sidebar-dark: #112720;
+  --dark-green: #19342d;
+}
+
+/* Tailwind CSS custom classes */
+.bg-blackboard {
+  background-color: var(--blackboard);
+}
+
+.bg-sidebar-dark {
+  background-color: var(--sidebar-dark);
+}
+
+.bg-dark-green {
+  background-color: var(--dark-green);
+}
+
+.text-chalk {
+  color: var(--chalk);
+}
+
+.text-chalk-dim {
+  color: var(--chalk-dim);
+}
+
+.border-chalk {
+  border-color: var(--chalk);
+}
+
+.border-chalk-dim {
+  border-color: var(--chalk-dim);
+}
+
+.font-chalk {
+  font-family: 'Quicksand', sans-serif;
+  font-weight: 500;
+}
+
+/* Chalk text effect for AI responses */
+.chalk-text {
+  font-family: 'Source Sans Pro', sans-serif;
+  font-size: 1.1rem;
+  line-height: 1.6;
+  letter-spacing: 0.01em;
+  color: var(--chalk);
+}
+
+/* Make certain headings stand out with chalk highlights */
+.chalk-text h1, .chalk-text h2 {
+  font-family: 'Quicksand', sans-serif;
+  font-weight: 600;
+  margin-top: 1.5em;
+  margin-bottom: 0.8em;
+  color: var(--chalk-accent);
+  text-shadow: 0px 0px 1px rgba(255, 255, 255, 0.5);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  padding-bottom: 0.3em;
+}
+
+.chalk-text h1 {
+  font-size: 1.6em;
+}
+
+.chalk-text h2 {
+  font-size: 1.4em;
+}
+
+/* Styling lists with chalk bullets */
+.chalk-text ul {
+  list-style: none;
+  padding-left: 1.5em;
+  margin: 1em 0;
+}
+
+.chalk-text ul li {
+  position: relative;
+  margin-bottom: 0.7em;
+}
+
+.chalk-text ul li::before {
+  content: '•';
+  position: absolute;
+  left: -1.2em;
+  color: var(--chalk-accent);
+}
+
+/* Style blockquotes as chalk-highlighted sections */
+.chalk-text blockquote {
+  border-left: 3px solid var(--chalk-accent);
+  padding-left: 1em;
+  margin-left: 0;
+  margin-right: 0;
+  font-style: italic;
+  color: var(--chalk-accent);
+}
+
+/* Give emphasis to important points */
+.chalk-text strong, .chalk-text b {
+  color: var(--chalk-accent);
+  font-weight: 700;
+}
+
+/* Input container chalk effect */
+.chalk-input-container {
+  position: relative;
+}
+
+.chalk-input-container::before {
+  content: "";
+  position: absolute;
+  top: -1px;
+  left: -1px;
+  right: -1px;
+  bottom: -1px;
+  background: rgba(255, 255, 255, 0.02);
+  pointer-events: none;
+}
+
+/* Chalk dust effect on teacher bubbles */
+.chalk-teacher-text {
+  position: relative;
+}
+
+.chalk-teacher-text::after {
+  content: '';
+  position: absolute;
+  bottom: -5px;
+  left: 10px;
+  right: 10px;
+  height: 1px;
+  background: linear-gradient(90deg, 
+    transparent, 
+    rgba(255, 255, 255, 0.1) 10%, 
+    rgba(255, 255, 255, 0.2) 20%, 
+    rgba(255, 255, 255, 0.2) 80%, 
+    rgba(255, 255, 255, 0.1) 90%, 
+    transparent
+  );
+}
+
+/* Student bubble style */
+.chalk-student-bubble {
+  position: relative;
+  font-family: 'Quicksand', sans-serif;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+}
+
+/* Custom scrollbar for chalk board aesthetics */
+.scrollbar-chalk::-webkit-scrollbar {
+  width: 12px;
+}
+
+.scrollbar-chalk::-webkit-scrollbar-track {
+  background: var(--blackboard-alt);
+}
+
+.scrollbar-chalk::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 20px;
+  border: 3px solid var(--blackboard-alt);
+}
+
+.scrollbar-chalk::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(255, 255, 255, 0.3);
+}
+
+/* Add responsive adjustments for mobile */
+@media (max-width: 768px) {
+  .chalk-text {
+    font-size: 1rem;
+  }
+  
+  .chalk-text h1 {
+    font-size: 1.4em;
+  }
+  
+  .chalk-text h2 {
+    font-size: 1.2em;
+  }
+}
+
+/* Code blocks styling */
+.chalk-text pre {
+  background-color: rgba(0, 0, 0, 0.3);
+  border-radius: 4px;
+  padding: 1em;
+  overflow-x: auto;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  margin: 1em 0;
+}
+
+.chalk-text code {
+  font-family: 'Courier New', monospace;
+  color: var(--chalk);
+  background-color: rgba(255, 255, 255, 0.05);
+  padding: 0.2em 0.4em;
+  border-radius: 3px;
+}
+
+.chalk-text pre code {
+  background-color: transparent;
+  padding: 0;
+}
+
+/* Table styling */
+.chalk-text table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 1em 0;
+}
+
+.chalk-text th {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 0.5em;
+  text-align: left;
+  color: var(--chalk-accent);
+  font-weight: 600;
+}
+
+.chalk-text td {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 0.5em;
+}
+
+/* Links styling */
+.chalk-text a {
+  color: var(--chalk-accent);
+  text-decoration: underline;
+  text-decoration-style: dotted;
+}
+
+.chalk-text a:hover {
+  text-decoration-style: solid;
+} 
