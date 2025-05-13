@@ -34,20 +34,38 @@ class GeminiHandler:
             Dict: Response from the model with success status
         """
         try:
-            response = self.model.generate_content(
-                prompt,
-                generation_config=genai.types.GenerationConfig(
-                    max_output_tokens=max_tokens,
-                    temperature=temperature,
-                    top_p=top_p,
-                    top_k=top_k
-                )
-            )
+            # Add instructions for structured output
+            structured_prompt = f"""
+            {prompt}
             
-            return {
-                'success': True,
-                'response': response.text
-            }
+            IMPORTANT: Your response MUST strictly follow the format outlined above.
+            Make sure each section is clearly labeled with the exact section titles specified.
+            """
+
+            # Add retry logic for more reliability
+            max_attempts = 2
+            for attempt in range(max_attempts):
+                try:
+                    response = self.model.generate_content(
+                        structured_prompt,
+                        generation_config=genai.types.GenerationConfig(
+                            max_output_tokens=max_tokens,
+                            temperature=temperature,
+                            top_p=top_p,
+                            top_k=top_k
+                        )
+                    )
+                    
+                    return {
+                        'success': True,
+                        'response': response.text
+                    }
+                except Exception as e:
+                    if attempt < max_attempts - 1:
+                        logger.warning(f"Retrying after error: {str(e)}")
+                        continue
+                    else:
+                        raise
             
         except Exception as e:
             logger.error(f"Error in Gemini response generation: {str(e)}")

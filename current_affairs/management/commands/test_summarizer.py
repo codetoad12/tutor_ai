@@ -12,27 +12,32 @@ class Command(BaseCommand):
         # Initialize the service
         service = CurrentAffairsService()
 
-        # Get the summary
+        # Get the analysis
         result = service.summarize_news(articles)
 
         if result['success']:
-            summary = result['summary']
+            analysis = result['analysis']
 
-            # Print the results
-            self.stdout.write(self.style.SUCCESS('\nSummary:'))
-            self.stdout.write(summary['summary'])
+            # Print the article analyses
+            self.stdout.write(self.style.SUCCESS('\nARTICLE ANALYSES:'))
+            for i, article in enumerate(analysis['article_analyses'], 1):
+                self.stdout.write(self.style.SUCCESS(f"\n{i}. {article['headline']}"))
+                self.stdout.write(f"Importance: {article['importance']}")
+                self.stdout.write(f"Summary: {article['summary']}")
+                self.stdout.write(f"Key Concepts: {article['key_concepts']}")
+                self.stdout.write('-' * 50)
 
-            self.stdout.write(self.style.SUCCESS('\nKey Concepts:'))
-            for concept in summary['key_concepts']:
-                self.stdout.write(f"- {concept}")
+            self.stdout.write("\n" + "=" * 70 + "\n")  # Clear separation
 
-            self.stdout.write(self.style.SUCCESS('\nSyllabus Connection:'))
-            self.stdout.write(summary['syllabus_connection'])
+            self.stdout.write(self.style.SUCCESS('\nSYLLABUS CONNECTION:'))
+            self.stdout.write(analysis['syllabus_connection'])
 
-            self.stdout.write(self.style.SUCCESS('\nPotential Questions:'))
-            for i, question in enumerate(summary['potential_questions'], 1):
+            self.stdout.write("\n" + "=" * 70 + "\n")  # Clear separation
+            
+            self.stdout.write(self.style.SUCCESS('\nPOTENTIAL QUESTIONS:'))
+            for i, question in enumerate(analysis['potential_questions'], 1):
                 self.stdout.write(f"{i}. {question}")
         else:
             self.stdout.write(
                 self.style.ERROR(f"Error: {result['error']}")
-            ) 
+            )
