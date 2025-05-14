@@ -6,6 +6,7 @@ from rest_framework.permissions import IsAuthenticated
 from .models import CurrentAffair
 from .serializers import CurrentAffairSerializer
 from .services import CurrentAffairsService
+from .handlers.news_handler import NewsHandler
 from datetime import datetime, timedelta
 import logging
 
@@ -112,6 +113,46 @@ class NewsSummarizationAPIView(APIView):
                 )
                 
         except Exception as e:
+            return Response(
+                {"error": str(e)}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+class FetchAndStoreNewsAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+    
+    def post(self, request):
+        try:
+            # Get parameters from request
+            max_articles = request.data.get('max_articles', 5)
+            skip_existing = request.data.get('skip_existing', False)
+            
+            # Initialize the handler
+            handler = NewsHandler()
+            
+            # Process the articles
+            result = handler.fetch_and_store_articles(
+                max_articles=max_articles,
+                skip_existing=skip_existing
+            )
+            
+            if not result['success']:
+                return Response(
+                    {"error": result['error']}, 
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                )
+                
+            # Return the result
+            return Response({
+                "message": f"Successfully processed news articles. {result['articles_saved']} saved, {result['articles_skipped']} skipped.",
+                "articles_saved": result['articles_saved'],
+                "articles_skipped": result['articles_skipped'],
+                "saved_articles": result['saved_articles'],
+                "syllabus_connection": result.get('syllabus_connection', '')
+            }, status=status.HTTP_200_OK)
+            
+        except Exception as e:
+            logger.error(f"Error in FetchAndStoreNewsAPIView: {str(e)}")
             return Response(
                 {"error": str(e)}, 
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR

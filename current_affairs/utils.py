@@ -41,7 +41,7 @@ def fetch_headlines(max_articles: int = 5) -> List[Dict]:
             if feed.bozo:
                 logger.warning(f"Error parsing feed {source}: {feed.bozo_exception}")
                 continue
-                
+
             # Process each entry
             for entry in feed.entries[:max_articles]:
                 article = {
@@ -52,6 +52,7 @@ def fetch_headlines(max_articles: int = 5) -> List[Dict]:
                     'published': entry.get('published', ''),
                     'published_parsed': entry.get('published_parsed', None)
                 }
+                
                 all_articles.append(article)
                 
         except Exception as e:
