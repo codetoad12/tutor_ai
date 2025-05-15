@@ -15,30 +15,30 @@ function Header({ onLogout, selectedDate, onDateChange }) {
   const isActive = (path) => location.pathname === path;
 
   return (
-    <header className="bg-white border-b border-gray-200 shadow-md sticky top-0 z-10">
-      <div className="container mx-auto px-4 py-4">
+    <header className="bg-white border-b border-gray-200 shadow-sm z-10">
+      <div className="container mx-auto px-3 py-2">
         {/* Top Bar */}
-        <div className="flex justify-between items-center mb-3">
+        <div className="flex justify-between items-center">
           <div className="flex items-center gap-2">
-            <FaNewspaper className="text-2xl text-blue-700" />
-            <span className="text-sm font-medium text-gray-700">{formattedDate}</span>
+            <FaNewspaper className="text-lg text-blue-700" />
+            <span className="text-xs font-medium text-gray-700">{formattedDate}</span>
           </div>
           
-          <div className="flex items-center gap-4">
-            <div className="flex items-center bg-blue-50 rounded-lg p-2 border border-blue-100 hover:bg-blue-100 transition-colors">
-              <FaCalendarAlt className="text-blue-700 mr-2 ml-1" />
+          <div className="flex items-center gap-2">
+            <div className="flex items-center bg-blue-50 rounded-lg p-1 border border-blue-100 hover:bg-blue-100 transition-colors">
+              <FaCalendarAlt className="text-blue-700 mr-1 ml-1 text-xs" />
               <input 
                 type="date" 
                 id="date-picker" 
                 value={selectedDate ? selectedDate.toISOString().split('T')[0] : today.toISOString().split('T')[0]}
                 onChange={onDateChange}
-                className="bg-transparent border-none text-gray-700 focus:outline-none focus:ring-0 text-sm"
+                className="bg-transparent border-none text-gray-700 focus:outline-none focus:ring-0 text-xs py-1 w-auto"
                 aria-label="Filter by date"
               />
               {selectedDate && (
                 <button 
                   onClick={() => onDateChange({ target: { value: '' } })}
-                  className="ml-2 text-xs text-blue-700 hover:text-blue-900"
+                  className="ml-1 text-xs text-blue-700 hover:text-blue-900"
                 >
                   Clear
                 </button>
@@ -47,70 +47,70 @@ function Header({ onLogout, selectedDate, onDateChange }) {
             
             <button
               onClick={onLogout}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-700 hover:bg-blue-800 rounded-lg transition-colors duration-200 text-sm text-white shadow-sm"
+              className="flex items-center gap-1 px-3 py-1 bg-blue-700 hover:bg-blue-800 rounded-lg transition-colors duration-200 text-xs text-white shadow-sm"
             >
-              <FaSignOutAlt className="text-sm" />
+              <FaSignOutAlt className="text-xs" />
               <span>Logout</span>
             </button>
           </div>
         </div>
         
-        {/* Main Header */}
-        <div className="flex flex-col items-center justify-center py-6 border-t border-gray-200">
-          <div className="text-center mb-6">
-            <h1 className="text-3xl font-serif font-bold tracking-tight text-blue-700">
+        {/* Main Header - Centered Title */}
+        <div className="flex flex-col items-center border-t border-gray-200 mt-2 pt-2">
+          <div className="text-center mb-2">
+            <h1 className="text-xl font-serif font-bold tracking-tight text-blue-700">
               <Link to="/">AI Tutor</Link>
             </h1>
-            <p className="text-gray-600 text-sm mt-2 italic">
-              Curated Current Affairs for UPSC Aspirants
+            <p className="text-gray-600 text-xs italic">
+              Curated Current Affairs
             </p>
           </div>
           
-          {/* Navigation */}
-          <nav className="flex items-center justify-center space-x-8">
+          {/* Navigation - Below Title */}
+          <nav className="flex items-center justify-center space-x-3 pb-1">
             <Link 
               to="/" 
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
+              className={`flex items-center gap-1 px-2 py-1 rounded-lg transition-colors text-xs ${
                 isActive('/') ? 'bg-blue-100 text-blue-700' : 'text-gray-600 hover:bg-blue-50'
               }`}
             >
-              <FaHome />
+              <FaHome className="text-xs" />
               <span>Home</span>
             </Link>
             <Link 
               to="/current-affairs" 
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
+              className={`flex items-center gap-1 px-2 py-1 rounded-lg transition-colors text-xs ${
                 isActive('/current-affairs') ? 'bg-purple-100 text-purple-700' : 'text-gray-600 hover:bg-blue-50'
               }`}
             >
-              <FaChartLine />
+              <FaChartLine className="text-xs" />
               <span>Current Affairs</span>
             </Link>
             <Link 
               to="/news" 
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
+              className={`flex items-center gap-1 px-2 py-1 rounded-lg transition-colors text-xs ${
                 isActive('/news') ? 'bg-green-100 text-green-700' : 'text-gray-600 hover:bg-blue-50'
               }`}
             >
-              <FaNewspaper />
+              <FaNewspaper className="text-xs" />
               <span>News</span>
             </Link>
             <Link 
               to="/daily-brief" 
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
+              className={`flex items-center gap-1 px-2 py-1 rounded-lg transition-colors text-xs ${
                 isActive('/daily-brief') ? 'bg-blue-100 text-blue-700' : 'text-gray-600 hover:bg-blue-50'
               }`}
             >
-              <FaBook />
+              <FaBook className="text-xs" />
               <span>Daily Brief</span>
             </Link>
             <Link 
               to="/chat" 
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
+              className={`flex items-center gap-1 px-2 py-1 rounded-lg transition-colors text-xs ${
                 isActive('/chat') ? 'bg-amber-100 text-amber-700' : 'text-gray-600 hover:bg-blue-50'
               }`}
             >
-              <FaComments />
+              <FaComments className="text-xs" />
               <span>Chat</span>
             </Link>
           </nav>

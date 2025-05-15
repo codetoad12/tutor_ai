@@ -104,9 +104,13 @@ class NewsSummarizationAPIView(APIView):
             service = CurrentAffairsService()
             result = service.summarize_news(news_articles)
             
+            logger.info(f"News summarization result: success={result['success']}")
             if result['success']:
-                return Response(result['summary'], status=status.HTTP_200_OK)
+                logger.info(f"Analysis keys: {result['analysis'].keys()}")
+                logger.info(f"First article analysis (if any): {result['analysis'].get('article_analyses', [])[0] if result['analysis'].get('article_analyses') else 'No articles'}")
+                return Response(result['analysis'], status=status.HTTP_200_OK)
             else:
+                logger.error(f"News summarization error: {result.get('error', 'Unknown error')}")
                 return Response(
                     {"error": result['error']}, 
                     status=status.HTTP_500_INTERNAL_SERVER_ERROR

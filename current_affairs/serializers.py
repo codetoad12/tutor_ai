@@ -11,10 +11,11 @@ class CurrentAffairSerializer(serializers.ModelSerializer):
             'title',
             'summary',
             'source',
-            'ai_insight',
+            'ai_insights',
             'tags',
-            'key_concepts',
             'usage_hint',
+            'importance',
+            'article_link',
             'created_at',
             'updated_at'
         ]

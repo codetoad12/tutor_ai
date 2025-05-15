@@ -208,7 +208,7 @@ class NewsHandler:
                 'ai_insights': article_analysis['key_concepts'],
                 'tags': article_analysis.get('key_concepts', '').split(', '),
                 'importance': article_analysis['importance'],
-                'article_link': original_article.get('link', '')
+                'article_link': original_article.get('article_link') or original_article.get('link', '')
             }
         )
         

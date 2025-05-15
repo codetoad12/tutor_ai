@@ -62,9 +62,20 @@ export const currentAffairsService = {
     // Summarize news articles
     summarizeNews: async (articles) => {
         try {
+            // Map content field to summary field for backend compatibility
+            const mappedArticles = articles.map(article => ({
+                title: article.title,
+                summary: article.content, // Map content to summary
+                link: article.article_link, // For compatibility with existing code
+                article_link: article.article_link, // For direct field access
+                importance: article.importance,
+                source: article.source || 'User Input'
+            }));
+            
             const response = await axios.post(`${API_BASE_URL}/summarize-news/`, {
-                articles
+                articles: mappedArticles
             });
+            
             return response.data;
         } catch (error) {
             console.error('Error summarizing news:', error);
