@@ -10,80 +10,67 @@ class CurrentAffairsService:
         self.gemini = GeminiHandler()
         
     def _get_summary_prompt(self, articles: List[Dict]) -> str:
-        """Generate the prompt for news summarization."""
-        # Prepare the input text
+        """Generate the prompt for news summarization tailored for UPSC relevance."""
         input_text = "\n\n".join([
             f"Headline: {article['title']}\nSummary: {article['summary']}\nSource: {article.get('source', 'Unknown')}\nURL: {article.get('link', '')}"
-            for i, article in enumerate(articles)
+            for article in articles
         ])
-        
+
         return f"""
-        You are an expert UPSC tutor specializing in current affairs analysis. 
-        Your task is to analyze the following news articles, rate their importance for UPSC exams, and provide a structured summary.
-        
-        For EACH news article, provide:
-        1. An importance rating ONLY as a number from 1 to 5 (where 1 is lowest and 5 is highest) for UPSC preparation
-        2. A concise summary (more detailed for high importance articles, brief for lower importance)
-        3. Key concepts (2-3 main topics or themes)
-        4. Syllabus connection (how this article connects to UPSC syllabus topics)
-        5. 1-3 potential questions based on the article for UPSC preparation
-        
-        IMPORTANCE RATING GUIDELINES - BE CONSISTENT:
-        Use these specific criteria to determine importance ratings (ONLY use numbers 1-5):
-        - 5: Direct relevance to UPSC, covering major policy changes, constitutional amendments, landmark judgments, major international treaties/agreements, or groundbreaking scientific achievements with national impact
-        - 4: Strong relevance to UPSC with significant impact on governance, economy, international relations, or security with medium-term implications
-        - 3: Moderate relevance to UPSC, covering ongoing developments in policies, regular economic indicators, important environmental issues
-        - 2: Limited relevance to UPSC, covering routine governmental activities or events with minimal long-term significance
-        - 1: Minimal relevance to UPSC, covering local events, entertainment, or sports with negligible policy implications
-        
-        Additional factors to consider for importance:
-        - Constitutional, policy or governance significance
-        - National security implications
-        - International relations impact
-        - Economic significance
-        - Historical or cultural importance
-        - Direct mention in UPSC syllabus topics
-        
-        IMPORTANT GUIDELINES:
-        - Do NOT include sensitive details about sexual abuse cases
-        - Filter out inappropriate content while preserving educational value
-        - Maintain a professional, educational tone suitable for UPSC students
-        - Importance rating MUST ONLY be a number from 1 to 5 - DO NOT use any text descriptors like High/Medium/Low
-        - For EVERY article analysis, make sure you include ALL fields (importance, summary, key concepts, syllabus connection, potential questions)
-        - NEVER skip any fields in your analysis
-        - All potential questions MUST be included ONLY under the "POTENTIAL QUESTIONS" section of each article, NOT as separate articles
-        - NEVER format a potential question as a new article with its own HEADLINE section
-        - BE CONSISTENT in your importance ratings based on the guidelines above
-        
-        FORMAT YOUR RESPONSE EXACTLY AS FOLLOWS:
-        
-        ARTICLE ANALYSES:
-        
-        HEADLINE: [Copy the exact article headline]
-        IMPORTANCE: [Number from 1-5]
-        SUMMARY: [Your concise summary]
-        KEY CONCEPTS: [List 2-3 key concepts]
-        SYLLABUS CONNECTION: [Brief explanation of how this news item connects to UPSC syllabus]
-        POTENTIAL QUESTIONS: 
-        1. [Question 1]
-        2. [Question 2]
-        3. [Question 3 for high importance articles]
-        
-        HEADLINE: [Next article headline]
-        IMPORTANCE: [Number from 1-5]
-        SUMMARY: [Your concise summary]
-        KEY CONCEPTS: [List 2-3 key concepts]
-        SYLLABUS CONNECTION: [Brief explanation of how this news item connects to UPSC syllabus]
-        POTENTIAL QUESTIONS: 
-        1. [Question 1]
-        2. [Question 2]
-        
-        [Continue for each article...]
-        
-        Here are the news articles to analyze:
-        
-        {input_text}
-        """
+                You are an expert UPSC mentor. Your task is to analyze each news article and assess its relevance for UPSC aspirants.
+
+                For EACH article, do the following:
+
+                - If the article has **no meaningful UPSC relevance**, you may completely skip it.
+                - Only include articles with an **importance rating of 2 or higher** (according to the rubric below).
+
+                For included articles, provide the following fields:
+
+                1. **IMPORTANCE**: A number from 1 to 5 indicating relevance to UPSC (see rubric)
+                2. **SUMMARY**: Concise explanation, tailored to UPSC context
+                3. **KEY CONCEPTS**: 2–3 core themes (e.g., Policy Reform, Internal Security)
+                4. **SYLLABUS CONNECTION**: State GS paper and topic (e.g., GS-III: Internal Security)
+                5. **POTENTIAL QUESTIONS**: 1–3 UPSC-style questions (based on importance)
+
+                ---
+
+                ### IMPORTANCE RATING RUBRIC (Use only numbers 1-5):
+                - 5 = Major: Policy change, SC ruling, national/international treaty or event
+                - 4 = Strong: Governance, economic reforms, security/international affairs
+                - 3 = Moderate: Policy updates, key data, major environment/tech issues
+                - 2 = Low: Minor government activities with tangential UPSC value
+                - 1 = Negligible: Local news, entertainment, crime, sports — IGNORE THESE
+
+                ---
+
+                ### GUIDELINES:
+                - DO NOT include any articles with an importance rating of 1
+                - BE STRICT — only retain what has **clear, direct value for UPSC**
+                - Maintain academic tone
+                - Place all questions only under “POTENTIAL QUESTIONS”
+                - Do not skip any fields for included articles
+
+                ---
+
+                ### FORMAT EXAMPLE:
+
+                ARTICLE ANALYSES:
+
+                HEADLINE: [Exact title]
+                IMPORTANCE: [2–5]
+                SUMMARY: [Concise, UPSC-focused]
+                KEY CONCEPTS: [Concept 1, Concept 2]
+                SYLLABUS CONNECTION: [GS Paper and topic]
+                POTENTIAL QUESTIONS:
+                1. [Q1]
+                2. [Q2]
+
+                [Repeat for each included article...]
+
+                ARTICLES TO ANALYZE:
+
+                {input_text}
+                """
     
     def _parse_summary_response(self, response_text: str) -> Dict:
         """Parse the raw response into structured format."""
