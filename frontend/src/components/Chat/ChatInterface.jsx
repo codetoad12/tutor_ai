@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { marked } from 'marked';
-import { FaPlus, FaTrash, FaDownload, FaFileAlt, FaFilePdf, FaRegClock, FaExclamationTriangle, FaArrowLeft, FaChalkboardTeacher, FaEraser, FaBook } from 'react-icons/fa';
+import { FaPlus, FaTrash, FaDownload, FaFileAlt, FaFilePdf, FaRegClock, FaExclamationTriangle, FaArrowLeft, FaChalkboardTeacher, FaEraser, FaBook, FaPencilAlt } from 'react-icons/fa';
 import { apiService } from '../../services/api';
 import { authService } from '../../services/auth';
 import './ChatInterface.css'; // We'll create this CSS file for custom styles
+import { createNotesTemplate } from '../../notes-template';
 
 // Configure marked for safe rendering
 marked.setOptions({
@@ -415,6 +416,85 @@ What topic would you like to explore today?`,
         }
     };
 
+    // Export chat as handwritten notes
+    const exportChatAsHandwrittenNotes = () => {
+        try {
+            // Prepare the messages for the notes template
+            const notesMessages = [];
+            
+            // Process messages into question-answer pairs
+            for (let i = 0; i < messages.length; i++) {
+                const message = messages[i];
+                if (message.role === 'user') {
+                    const noteItem = {
+                        content: message.content
+                    };
+                    
+                    // Look for the next assistant message as the answer
+                    if (i + 1 < messages.length && messages[i + 1].role === 'assistant') {
+                        noteItem.response = {
+                            response_text: messages[i + 1].content
+                        };
+                    }
+                    
+                    notesMessages.push(noteItem);
+                }
+            }
+            
+            // Get current session title
+            const currentSession = sessions.find(s => s.id.toString() === currentSessionId);
+            const title = currentSession ? currentSession.title : 'UPSC Study Notes';
+            
+            // Generate HTML for the notes
+            const notesHtml = createNotesTemplate(title, notesMessages);
+            
+            // Create a Blob and download
+            const blob = new Blob([notesHtml], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `UPSC_Handwritten_Notes_${new Date().toISOString().split('T')[0]}.html`;
+            document.body.appendChild(a);
+            a.click();
+            
+            // Clean up
+            setTimeout(() => {
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }, 100);
+            
+            // Show success message as a temporary message
+            setMessages(prev => [...prev, {
+                role: 'system',
+                content: 'Handwritten notes exported successfully!',
+                temporary: true
+            }]);
+            
+            // Remove temporary message after 3 seconds
+            setTimeout(() => {
+                setMessages(prev => prev.filter(msg => !msg.temporary));
+            }, 3000);
+            
+        } catch (error) {
+            console.error('Failed to export handwritten notes:', error);
+            setErrorState({
+                message: 'Failed to export handwritten notes',
+                details: error.toString()
+            });
+            setMessages(prev => [...prev, {
+                role: 'system',
+                content: 'Failed to export handwritten notes. Please try again.',
+                temporary: true,
+                error: true
+            }]);
+            
+            // Remove temporary message after 3 seconds
+            setTimeout(() => {
+                setMessages(prev => prev.filter(msg => !msg.temporary));
+            }, 3000);
+        }
+    };
+
     // Toggle the export dropdown
     const toggleExportDropdown = () => {
         setExportDropdownOpen(prev => !prev);
@@ -574,6 +654,16 @@ What topic would you like to explore today?`,
                                     >
                                         <FaFileAlt className="text-chalk-dim" />
                                         <span>As Markdown</span>
+                                    </button>
+                                    <button 
+                                        onClick={() => {
+                                            toggleExportDropdown();
+                                            exportChatAsHandwrittenNotes();
+                                        }}
+                                        className="w-full flex items-center gap-2 px-3 py-2 hover:bg-green-800 text-sm"
+                                    >
+                                        <FaPencilAlt className="text-chalk-dim" />
+                                        <span>As Handwritten Notes</span>
                                     </button>
                                     <button 
                                         className="w-full flex items-center gap-2 px-3 py-2 hover:bg-green-800 text-sm"

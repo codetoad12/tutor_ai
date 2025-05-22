@@ -12,27 +12,49 @@ class Command(BaseCommand):
         # Initialize the service
         service = CurrentAffairsService()
 
-        # Get the summary
+        # Get the analysis
         result = service.summarize_news(articles)
-
+        
         if result['success']:
-            summary = result['summary']
+            analysis = result['analysis']
 
-            # Print the results
-            self.stdout.write(self.style.SUCCESS('\nSummary:'))
-            self.stdout.write(summary['summary'])
+            # Print the article analyses
+            self.stdout.write(self.style.SUCCESS('\nARTICLE ANALYSES:'))
+            for i, article in enumerate(analysis['article_analyses'], 1):
+                # Find the original article to get the link
+                original_article = None
+                for art in articles:
+                    if art['title'] == article['headline'] or art['title'] in article['headline'] or article['headline'] in art['title']:
+                        original_article = art
+                        break
+                
+                link = original_article.get('link', 'No link available') if original_article else 'No link available'
+                
+                self.stdout.write(self.style.SUCCESS(f"\n{i}. {article['headline']}"))
+                self.stdout.write(f"URL: {link}")
+                self.stdout.write(f"Importance: {article['importance']}")
+                self.stdout.write(f"Summary: {article['summary']}")
+                self.stdout.write(f"Key Concepts: {article['key_concepts']}")
+                
+                # Print syllabus connection if available
+                if article.get('syllabus_connection'):
+                    self.stdout.write(f"Syllabus Connection: {article['syllabus_connection']}")
+                else:
+                    self.stdout.write(f"Syllabus Connection: Not provided")
+                
+                # Print potential questions if available
+                self.stdout.write(f"Potential Questions:")
+                if article.get('potential_questions') and len(article['potential_questions']) > 0:
+                    for j, question in enumerate(article['potential_questions'], 1):
+                        self.stdout.write(f"  {j}. {question}")
+                else:
+                    self.stdout.write(f"  No questions provided")
+                        
+                self.stdout.write('-' * 50)
 
-            self.stdout.write(self.style.SUCCESS('\nKey Concepts:'))
-            for concept in summary['key_concepts']:
-                self.stdout.write(f"- {concept}")
-
-            self.stdout.write(self.style.SUCCESS('\nSyllabus Connection:'))
-            self.stdout.write(summary['syllabus_connection'])
-
-            self.stdout.write(self.style.SUCCESS('\nPotential Questions:'))
-            for i, question in enumerate(summary['potential_questions'], 1):
-                self.stdout.write(f"{i}. {question}")
+            self.stdout.write("\n" + "=" * 70 + "\n")  # Clear separation
+            self.stdout.write(self.style.SUCCESS("Analysis complete!"))
         else:
             self.stdout.write(
                 self.style.ERROR(f"Error: {result['error']}")
-            ) 
+            )

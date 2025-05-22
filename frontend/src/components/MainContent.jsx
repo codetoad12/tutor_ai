@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { authService } from '../services/auth';
 import NewsCard from './NewsCard';
-import { FaBookmark, FaRegBookmark, FaChartLine, FaQuestionCircle, FaSearch, FaCalendarAlt } from 'react-icons/fa';
+import { FaBookmark, FaRegBookmark, FaChartLine, FaQuestionCircle, FaSearch, FaCalendarAlt, FaClock, FaGraduationCap, FaLightbulb, FaExternalLinkAlt, FaClipboardList } from 'react-icons/fa';
 
 function MainContent() {
   const [currentAffairs, setCurrentAffairs] = useState([]);
@@ -14,6 +14,8 @@ function MainContent() {
   });
   const [selectedDate, setSelectedDate] = useState(null);
   const [bookmarkedAffairs, setBookmarkedAffairs] = useState([]);
+  const [categoryCounts, setCategoryCounts] = useState({});
+  const [daysToExam, setDaysToExam] = useState(null);
 
   // Static trending topics data
   const trendingTopics = [
@@ -39,7 +41,32 @@ function MainContent() {
     'Miscellaneous'
   ];
 
+  // Quick resources links
+  const quickResources = [
+    { name: 'UPSC Official Website', url: 'https://upsc.gov.in/' },
+    { name: 'Monthly Current Affairs PDF', url: '#' },
+    { name: 'PIB Daily Bulletin', url: 'https://pib.gov.in/Allrel.aspx' },
+    { name: 'UPSC Syllabus PDF', url: '#' },
+    { name: 'Previous Year Question Papers', url: '#' }
+  ];
+
+  // Study tips
+  const studyTips = [
+    "Review daily news analysis before bedtime",
+    "Connect current affairs to static syllabus topics",
+    "Practice answer writing for at least 30 minutes daily",
+    "Make mind maps for complex topics",
+    "Revise your notes weekly"
+  ];
+
   useEffect(() => {
+    // Calculate days to prelims exam (assuming May 26, 2024 for example)
+    const examDate = new Date('2024-05-26');
+    const today = new Date();
+    const diffTime = Math.abs(examDate - today);
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    setDaysToExam(diffDays);
+
     const fetchCurrentAffairs = async () => {
       try {
         if (!authService.isAuthenticated()) {
@@ -63,6 +90,15 @@ function MainContent() {
         const data = await response.json();
         setCurrentAffairs(data);
         setFilteredAffairs(data);
+        
+        // Calculate category counts
+        const counts = {};
+        data.forEach(affair => {
+          if (affair.category) {
+            counts[affair.category] = (counts[affair.category] || 0) + 1;
+          }
+        });
+        setCategoryCounts(counts);
       } catch (err) {
         console.error('Error fetching current affairs:', err);
         setError(err.message);
@@ -161,9 +197,117 @@ function MainContent() {
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          {/* Main News Column */}
-          <div className="order-2 lg:order-1 lg:col-span-8">
+        <div className="flex flex-col lg:flex-row gap-8">
+          {/* Sidebar - Left side */}
+          <div className="w-full lg:w-1/4">
+            {/* Exam Countdown */}
+            {daysToExam && (
+              <div className="bg-gradient-to-br from-blue-600 to-blue-700 rounded-lg p-6 mb-6 shadow-sm text-white relative overflow-hidden">
+                <div className="absolute -right-5 -top-5 bg-blue-500 rounded-full w-20 h-20 opacity-20"></div>
+                <div className="absolute -left-5 -bottom-5 bg-blue-500 rounded-full w-16 h-16 opacity-20"></div>
+                
+                <div className="flex items-center mb-3">
+                  <FaClock className="mr-2 text-xl" />
+                  <h3 className="text-lg font-medium font-serif">UPSC Prelims Countdown</h3>
+                </div>
+                
+                <div className="text-3xl font-bold tracking-tight mb-1">{daysToExam} days</div>
+                <p className="text-sm text-blue-100">to go for UPSC CSE Prelims 2024</p>
+                
+                <div className="mt-4 pt-4 border-t border-blue-500">
+                  <div className="text-sm">
+                    <span className="font-medium">Exam Date:</span> May 26, 2024
+                  </div>
+                </div>
+              </div>
+            )}
+          
+            {/* Categories */}
+            <div className="bg-white border border-gray-200 rounded-lg p-6 mb-6 shadow-sm">
+              <h3 className="text-lg font-medium text-gray-800 mb-4 font-serif">Categories</h3>
+              <ul className="space-y-3">
+                {categories.map(category => (
+                  <li key={category} className="group">
+                    <button
+                      onClick={() => setFilters(prev => ({ ...prev, category }))}
+                      className="w-full flex justify-between items-center px-3 py-2 rounded-lg text-sm hover:bg-gray-50 transition-colors"
+                    >
+                      <span className="text-gray-700">{category}</span>
+                      <span className={`bg-blue-50 text-blue-600 rounded-full px-2 py-0.5 text-xs ${
+                        filters.category === category ? 'bg-blue-100' : ''
+                      }`}>
+                        {categoryCounts[category] || 0}
+                      </span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Trending Topics */}
+            <div className="bg-white border border-gray-200 rounded-lg p-6 mb-6 shadow-sm">
+              <h3 className="text-lg font-medium text-gray-800 mb-4 font-serif">Trending Topics</h3>
+              <ul className="space-y-3">
+                {trendingTopics.map(topic => (
+                  <li key={topic.name} className="group">
+                    <button
+                      onClick={() => setFilters(prev => ({ ...prev, search: topic.name }))}
+                      className="w-full flex justify-between items-center px-3 py-2 rounded-lg text-sm hover:bg-gray-50 transition-colors"
+                    >
+                      <span className="text-gray-700">{topic.name}</span>
+                      <span className="bg-blue-50 text-blue-600 rounded-full px-2 py-0.5 text-xs">
+                        {topic.count}
+                      </span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            
+            {/* Quick Resources */}
+            <div className="bg-white border border-gray-200 rounded-lg p-6 mb-6 shadow-sm">
+              <div className="flex items-center mb-4">
+                <FaGraduationCap className="mr-2 text-blue-700" />
+                <h3 className="text-lg font-medium text-gray-800 font-serif">Quick Resources</h3>
+              </div>
+              
+              <ul className="space-y-2">
+                {quickResources.map((resource, index) => (
+                  <li key={index}>
+                    <a 
+                      href={resource.url} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-blue-50 rounded-lg transition-colors"
+                    >
+                      {resource.name}
+                      <FaExternalLinkAlt className="ml-2 text-xs text-gray-400" />
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            
+            {/* Study Tips */}
+            <div className="bg-gradient-to-r from-yellow-50 to-amber-50 border border-amber-100 rounded-lg p-6 shadow-sm">
+              <div className="flex items-center mb-4">
+                <FaLightbulb className="mr-2 text-amber-500" />
+                <h3 className="text-lg font-medium text-gray-800 font-serif">Study Tips</h3>
+              </div>
+              
+              <ul className="space-y-3">
+                {studyTips.map((tip, index) => (
+                  <li key={index} className="flex items-start">
+                    <FaClipboardList className="text-amber-500 mt-1 mr-2 flex-shrink-0" />
+                    <span className="text-sm text-gray-700">{tip}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+
+          {/* Main News Column - Centered */}
+          <div className="w-full lg:w-3/4 max-w-3xl mx-auto">
             {loading ? (
               <div className="text-center py-12">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-700 mx-auto mb-4"></div>
@@ -177,7 +321,7 @@ function MainContent() {
               <div>
                 {filteredAffairs.length > 0 ? (
                   <>
-                    <div style={{ marginBottom: '40px' }} className="bg-white border border-gray-200 rounded-lg p-6 flex flex-wrap justify-between items-center shadow-sm">
+                    <div className="bg-white border border-gray-200 rounded-lg p-6 flex flex-wrap justify-between items-center shadow-sm mb-8">
                       <p className="text-gray-700 text-base">
                         {filteredAffairs.length === 1 ? (
                           <span className="font-serif font-medium">Discover 1 important story for your UPSC preparation today</span>
@@ -234,9 +378,9 @@ function MainContent() {
                         )}
                       </div>
                     </div>
-                    
+
                     {filteredAffairs.map((affair, index) => (
-                      <div key={affair.id} style={{ marginBottom: index < filteredAffairs.length - 1 ? '40px' : '0' }}>
+                      <div key={affair.id} className="mb-8">
                         <NewsCard 
                           currentAffair={affair}
                           isBookmarked={bookmarkedAffairs.some(a => a.id === affair.id)}
@@ -261,53 +405,6 @@ function MainContent() {
                 )}
               </div>
             )}
-          </div>
-
-          {/* Sidebar */}
-          <div className="order-1 lg:order-2 lg:col-span-4">
-            {/* Categories */}
-            <div className="bg-white border border-gray-200 rounded-lg p-6 mb-6 shadow-sm">
-              <h3 className="text-lg font-medium text-gray-800 mb-4 font-serif">Categories</h3>
-              <ul className="space-y-2">
-                {categories.map(category => (
-                  <li key={category} className="group">
-                    <button
-                      onClick={() => setFilters(prev => ({ ...prev, category }))}
-                      className={`w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                        filters.category === category 
-                          ? 'bg-blue-50 text-blue-700 border border-blue-100' 
-                          : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                      }`}
-                    >
-                      {category}
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Trending Topics */}
-            <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
-              <div className="flex items-center gap-2 mb-4">
-                <FaChartLine className="text-red-600" />
-                <h3 className="text-lg font-medium text-gray-800 font-serif">Trending Topics</h3>
-              </div>
-              <ul className="space-y-3">
-                {trendingTopics.map(topic => (
-                  <li key={topic.name} className="group">
-                    <button 
-                      onClick={() => setFilters(prev => ({ ...prev, search: topic.name }))}
-                      className="w-full flex items-center justify-between px-3 py-2 bg-gray-50 hover:bg-blue-50 rounded-lg group-hover:shadow-sm transition-all"
-                    >
-                      <span className="text-sm text-gray-700 group-hover:text-blue-700">{topic.name}</span>
-                      <span className="bg-white px-2 py-0.5 rounded-full text-xs font-medium text-gray-500 border border-gray-200 group-hover:border-blue-200 group-hover:text-blue-600">
-                        {topic.count}
-                      </span>
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </div>
           </div>
         </div>
       </main>

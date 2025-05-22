@@ -12,7 +12,8 @@ import ChatInterface from './components/Chat/ChatInterface';
 // Wrapper component to conditionally render Header based on the route
 const AppContent = ({ isAuthenticated, handleLogout, selectedDate, handleDateChange }) => {
     const location = useLocation();
-    const showHeader = location.pathname !== '/chat';
+    // Hide header on chat page and landing page (root path)
+    const showHeader = location.pathname !== '/chat' && location.pathname !== '/';
     
     if (!isAuthenticated) {
         return <Login onLogin={() => window.location.reload()} />;
