@@ -54,6 +54,7 @@ INSTALLED_APPS = [
     'chat.apps.ChatConfig',
     'current_affairs',
     'prediction_engine',
+    'progress_tracker',
     
     # Custom apps
     'base.apps.BaseConfig',

@@ -3,20 +3,39 @@ import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'r
 import { authService } from './services/auth';
 import MainContent from './components/MainContent';
 import Login from './components/Login';
+import Register from './components/Register';
 import Header from './components/Header';
 import NewsCard from './components/NewsCard';
 import DailyBrief from './components/DailyBrief';
 import LandingPage from './components/LandingPage';
 import ChatInterface from './components/Chat/ChatInterface';
+import ProgressTrackerPage from './components/ProgressTrackerPage';
 
 // Wrapper component to conditionally render Header based on the route
 const AppContent = ({ isAuthenticated, handleLogout, selectedDate, handleDateChange }) => {
     const location = useLocation();
+    const [showRegister, setShowRegister] = useState(false);
+    
     // Hide header on chat page and landing page (root path)
     const showHeader = location.pathname !== '/chat' && location.pathname !== '/';
     
     if (!isAuthenticated) {
-        return <Login onLogin={() => window.location.reload()} />;
+        if (showRegister) {
+            return (
+                <Register 
+                    onRegister={() => {
+                        // After successful registration, show login page
+                        setShowRegister(false);
+                    }}
+                />
+            );
+        }
+        return (
+            <Login 
+                onLogin={() => window.location.reload()}
+                onShowRegister={() => setShowRegister(true)}
+            />
+        );
     }
     
     return (
@@ -34,6 +53,7 @@ const AppContent = ({ isAuthenticated, handleLogout, selectedDate, handleDateCha
                 <Route path="/news" element={<NewsCard />} />
                 <Route path="/daily-brief" element={<DailyBrief />} />
                 <Route path="/chat" element={<ChatInterface />} />
+                <Route path="/progress-tracker" element={<ProgressTrackerPage />} />
                 <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
         </>
