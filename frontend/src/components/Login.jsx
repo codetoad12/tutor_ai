@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { authService } from '../services/auth';
 import { FaUser, FaLock, FaSpinner, FaGraduationCap, FaBook, FaPencilAlt, FaRobot } from 'react-icons/fa';
 
-function Login({ onLogin }) {
+function Login({ onLogin, onShowRegister }) {
   const [credentials, setCredentials] = useState({
     username: '',
     password: '',
@@ -137,10 +137,13 @@ function Login({ onLogin }) {
               </div>
             </div>
             <p className="mt-4 text-sm">
-              <a href="register.html" className="text-accent-blue hover:text-accent-blue-dark font-medium inline-flex items-center">
+              <button 
+                onClick={onShowRegister}
+                className="text-accent-blue hover:text-accent-blue-dark font-medium inline-flex items-center transition-colors duration-200"
+              >
                 <FaGraduationCap className="mr-2" />
                 Begin Your Learning Adventure
-              </a>
+              </button>
             </p>
           </div>
         </div>

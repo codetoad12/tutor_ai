@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { FaSignOutAlt, FaCalendarAlt, FaNewspaper, FaSearch, FaHome, FaBook, FaChartLine, FaComments } from 'react-icons/fa';
+import { FaSignOutAlt, FaCalendarAlt, FaNewspaper, FaSearch, FaHome, FaBook, FaChartLine, FaComments, FaBullseye } from 'react-icons/fa';
 
 function Header({ onLogout, selectedDate, onDateChange }) {
   const location = useLocation();
@@ -62,21 +62,12 @@ function Header({ onLogout, selectedDate, onDateChange }) {
               <Link to="/">AI Tutor</Link>
             </h1>
             <p className="text-gray-600 text-xs italic">
-              Curated Current Affairs
+              AI-Powered UPSC Preparation
             </p>
           </div>
           
           {/* Navigation - Below Title */}
           <nav className="flex items-center justify-center space-x-3 pb-1">
-            <Link 
-              to="/" 
-              className={`flex items-center gap-1 px-2 py-1 rounded-lg transition-colors text-xs ${
-                isActive('/') ? 'bg-blue-100 text-blue-700' : 'text-gray-600 hover:bg-blue-50'
-              }`}
-            >
-              <FaHome className="text-xs" />
-              <span>Home</span>
-            </Link>
             <Link 
               to="/current-affairs" 
               className={`flex items-center gap-1 px-2 py-1 rounded-lg transition-colors text-xs ${
@@ -87,24 +78,6 @@ function Header({ onLogout, selectedDate, onDateChange }) {
               <span>Current Affairs</span>
             </Link>
             <Link 
-              to="/news" 
-              className={`flex items-center gap-1 px-2 py-1 rounded-lg transition-colors text-xs ${
-                isActive('/news') ? 'bg-green-100 text-green-700' : 'text-gray-600 hover:bg-blue-50'
-              }`}
-            >
-              <FaNewspaper className="text-xs" />
-              <span>News</span>
-            </Link>
-            <Link 
-              to="/daily-brief" 
-              className={`flex items-center gap-1 px-2 py-1 rounded-lg transition-colors text-xs ${
-                isActive('/daily-brief') ? 'bg-blue-100 text-blue-700' : 'text-gray-600 hover:bg-blue-50'
-              }`}
-            >
-              <FaBook className="text-xs" />
-              <span>Daily Brief</span>
-            </Link>
-            <Link 
               to="/chat" 
               className={`flex items-center gap-1 px-2 py-1 rounded-lg transition-colors text-xs ${
                 isActive('/chat') ? 'bg-amber-100 text-amber-700' : 'text-gray-600 hover:bg-blue-50'
@@ -112,6 +85,15 @@ function Header({ onLogout, selectedDate, onDateChange }) {
             >
               <FaComments className="text-xs" />
               <span>Chat</span>
+            </Link>
+            <Link 
+              to="/progress-tracker" 
+              className={`flex items-center gap-1 px-2 py-1 rounded-lg transition-colors text-xs ${
+                isActive('/progress-tracker') ? 'bg-indigo-100 text-indigo-700' : 'text-gray-600 hover:bg-blue-50'
+              }`}
+            >
+              <FaBullseye className="text-xs" />
+              <span>Progress</span>
             </Link>
           </nav>
         </div>

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { FaNewspaper, FaBook, FaChartLine, FaComments } from 'react-icons/fa';
+import { FaNewspaper, FaBook, FaChartLine, FaComments, FaBullseye } from 'react-icons/fa';
 
 const FeatureCard = ({ title, description, icon, path, color }) => {
   return (
@@ -23,20 +23,6 @@ const FeatureCard = ({ title, description, icon, path, color }) => {
 const LandingPage = () => {
   const features = [
     {
-      title: 'Daily Brief',
-      description: 'Get your daily dose of current affairs carefully curated for UPSC aspirants',
-      icon: <FaNewspaper className="text-2xl" />,
-      path: '/daily-brief',
-      color: 'bg-blue-500'
-    },
-    {
-      title: 'Latest News',
-      description: 'Stay updated with the latest news and events from around the world',
-      icon: <FaBook className="text-2xl" />,
-      path: '/news',
-      color: 'bg-green-500'
-    },
-    {
       title: 'Current Affairs',
       description: 'Explore a comprehensive collection of current affairs for your UPSC preparation',
       icon: <FaChartLine className="text-2xl" />,
@@ -49,6 +35,13 @@ const LandingPage = () => {
       icon: <FaComments className="text-2xl" />,
       path: '/chat',
       color: 'bg-amber-500'
+    },
+    {
+      title: 'Progress Tracker',
+      description: 'Track your UPSC preparation goals and monitor your weekly study progress',
+      icon: <FaBullseye className="text-2xl" />,
+      path: '/progress-tracker',
+      color: 'bg-indigo-500'
     }
   ];
 
@@ -62,7 +55,7 @@ const LandingPage = () => {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {features.map((feature, index) => (
             <FeatureCard key={index} {...feature} />
           ))}
@@ -70,6 +63,11 @@ const LandingPage = () => {
 
         <div className="mt-16 bg-white rounded-xl shadow-md p-8 border border-gray-200">
           <h2 className="text-2xl font-bold text-gray-800 mb-4">Recent Updates</h2>
+          <div className="border-l-4 border-indigo-500 pl-4 py-2 mb-4">
+            <p className="text-gray-700">
+              <span className="font-semibold">New Feature:</span> Progress Tracker is now available to help you set and monitor your UPSC preparation goals
+            </p>
+          </div>
           <div className="border-l-4 border-blue-500 pl-4 py-2 mb-4">
             <p className="text-gray-700">
               <span className="font-semibold">Daily Brief:</span> Updated with the latest current affairs for June 14, 2024
@@ -77,7 +75,7 @@ const LandingPage = () => {
           </div>
           <div className="border-l-4 border-green-500 pl-4 py-2 mb-4">
             <p className="text-gray-700">
-              <span className="font-semibold">New Feature:</span> AI Chat Assistant is now available to help with your preparation
+              <span className="font-semibold">AI Chat Assistant:</span> Enhanced with better UPSC-specific responses and study guidance
             </p>
           </div>
           <div className="border-l-4 border-purple-500 pl-4 py-2">
