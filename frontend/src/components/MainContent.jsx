@@ -17,18 +17,6 @@ function MainContent() {
   const [categoryCounts, setCategoryCounts] = useState({});
   const [daysToExam, setDaysToExam] = useState(null);
 
-  // Static trending topics data
-  const trendingTopics = [
-    { name: 'UPSC Prelims 2024', count: 45 },
-    { name: 'Indian Economy', count: 32 },
-    { name: 'International Relations', count: 28 },
-    { name: 'Environment & Ecology', count: 25 },
-    { name: 'Science & Technology', count: 22 },
-    { name: 'Polity & Governance', count: 20 },
-    { name: 'Social Issues', count: 18 },
-    { name: 'History & Culture', count: 15 }
-  ];
-
   // Static categories
   const categories = [
     'Polity',
@@ -41,27 +29,27 @@ function MainContent() {
     'Miscellaneous'
   ];
 
-  // Quick resources links
-  const quickResources = [
-    { name: 'UPSC Official Website', url: 'https://upsc.gov.in/' },
-    { name: 'Monthly Current Affairs PDF', url: '#' },
-    { name: 'PIB Daily Bulletin', url: 'https://pib.gov.in/Allrel.aspx' },
-    { name: 'UPSC Syllabus PDF', url: '#' },
-    { name: 'Previous Year Question Papers', url: '#' }
-  ];
+  // Quick date filters
+  const getQuickDateFilters = () => {
+    const today = new Date();
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+    const lastWeek = new Date(today);
+    lastWeek.setDate(lastWeek.getDate() - 7);
+    const lastMonth = new Date(today);
+    lastMonth.setMonth(lastMonth.getMonth() - 1);
 
-  // Study tips
-  const studyTips = [
-    "Review daily news analysis before bedtime",
-    "Connect current affairs to static syllabus topics",
-    "Practice answer writing for at least 30 minutes daily",
-    "Make mind maps for complex topics",
-    "Revise your notes weekly"
-  ];
+    return [
+      { label: 'Today', date: today, count: currentAffairs.filter(affair => affair.date.startsWith(today.toISOString().split('T')[0])).length },
+      { label: 'Yesterday', date: yesterday, count: currentAffairs.filter(affair => affair.date.startsWith(yesterday.toISOString().split('T')[0])).length },
+      { label: 'Last 7 days', date: lastWeek, count: currentAffairs.filter(affair => new Date(affair.date) >= lastWeek).length },
+      { label: 'Last 30 days', date: lastMonth, count: currentAffairs.filter(affair => new Date(affair.date) >= lastMonth).length }
+    ];
+  };
 
   useEffect(() => {
-    // Calculate days to prelims exam (assuming May 26, 2024 for example)
-    const examDate = new Date('2024-05-26');
+    // Calculate days to UPSC Mains exam (estimated August 20, 2025)
+    const examDate = new Date('2025-08-20');
     const today = new Date();
     const diffTime = Math.abs(examDate - today);
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
@@ -208,15 +196,15 @@ function MainContent() {
                 
                 <div className="flex items-center mb-3">
                   <FaClock className="mr-2 text-xl" />
-                  <h3 className="text-lg font-medium font-serif">UPSC Prelims Countdown</h3>
+                  <h3 className="text-lg font-medium font-serif">UPSC Mains Countdown</h3>
                 </div>
                 
                 <div className="text-3xl font-bold tracking-tight mb-1">{daysToExam} days</div>
-                <p className="text-sm text-blue-100">to go for UPSC CSE Prelims 2024</p>
+                <p className="text-sm text-blue-100">to go for UPSC CSE Mains 2025</p>
                 
                 <div className="mt-4 pt-4 border-t border-blue-500">
                   <div className="text-sm">
-                    <span className="font-medium">Exam Date:</span> May 26, 2024
+                    <span className="font-medium">Exam Date:</span> August 20, 2025 (Estimated)
                   </div>
                 </div>
               </div>
@@ -244,65 +232,76 @@ function MainContent() {
               </ul>
             </div>
 
-            {/* Trending Topics */}
+            {/* Quick date filters */}
             <div className="bg-white border border-gray-200 rounded-lg p-6 mb-6 shadow-sm">
-              <h3 className="text-lg font-medium text-gray-800 mb-4 font-serif">Trending Topics</h3>
+              <h3 className="text-lg font-medium text-gray-800 mb-4 font-serif">Quick Date Filters</h3>
               <ul className="space-y-3">
-                {trendingTopics.map(topic => (
-                  <li key={topic.name} className="group">
+                {getQuickDateFilters().map((filter, index) => (
+                  <li key={index} className="group">
                     <button
-                      onClick={() => setFilters(prev => ({ ...prev, search: topic.name }))}
+                      onClick={() => setSelectedDate(filter.date)}
                       className="w-full flex justify-between items-center px-3 py-2 rounded-lg text-sm hover:bg-gray-50 transition-colors"
                     >
-                      <span className="text-gray-700">{topic.name}</span>
+                      <span className="text-gray-700">{filter.label}</span>
                       <span className="bg-blue-50 text-blue-600 rounded-full px-2 py-0.5 text-xs">
-                        {topic.count}
+                        {filter.count}
                       </span>
                     </button>
                   </li>
                 ))}
               </ul>
             </div>
-            
-            {/* Quick Resources */}
-            <div className="bg-white border border-gray-200 rounded-lg p-6 mb-6 shadow-sm">
+
+            {/* Bookmarked Articles */}
+            {bookmarkedAffairs.length > 0 && (
+              <div className="bg-white border border-gray-200 rounded-lg p-6 mb-6 shadow-sm">
+                <div className="flex items-center mb-4">
+                  <FaBookmark className="mr-2 text-blue-700" />
+                  <h3 className="text-lg font-medium text-gray-800 font-serif">Bookmarked ({bookmarkedAffairs.length})</h3>
+                </div>
+                <div className="space-y-2 max-h-48 overflow-y-auto">
+                  {bookmarkedAffairs.slice(0, 5).map(affair => (
+                    <div key={affair.id} className="p-2 bg-gray-50 rounded text-sm hover:bg-gray-100 transition-colors cursor-pointer">
+                      <p className="font-medium text-gray-800 line-clamp-2">{affair.title}</p>
+                      <p className="text-xs text-gray-500 mt-1">{affair.category}</p>
+                    </div>
+                  ))}
+                  {bookmarkedAffairs.length > 5 && (
+                    <p className="text-xs text-gray-500 text-center pt-2">
+                      +{bookmarkedAffairs.length - 5} more bookmarked
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Reading Statistics */}
+            <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg p-6 shadow-sm">
               <div className="flex items-center mb-4">
-                <FaGraduationCap className="mr-2 text-blue-700" />
-                <h3 className="text-lg font-medium text-gray-800 font-serif">Quick Resources</h3>
+                <FaChartLine className="mr-2 text-green-600" />
+                <h3 className="text-lg font-medium text-gray-800 font-serif">Reading Stats</h3>
               </div>
               
-              <ul className="space-y-2">
-                {quickResources.map((resource, index) => (
-                  <li key={index}>
-                    <a 
-                      href={resource.url} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-blue-50 rounded-lg transition-colors"
-                    >
-                      {resource.name}
-                      <FaExternalLinkAlt className="ml-2 text-xs text-gray-400" />
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
-            
-            {/* Study Tips */}
-            <div className="bg-gradient-to-r from-yellow-50 to-amber-50 border border-amber-100 rounded-lg p-6 shadow-sm">
-              <div className="flex items-center mb-4">
-                <FaLightbulb className="mr-2 text-amber-500" />
-                <h3 className="text-lg font-medium text-gray-800 font-serif">Study Tips</h3>
+              <div className="space-y-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-700">Total Articles</span>
+                  <span className="font-bold text-green-600">{currentAffairs.length}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-700">Bookmarked</span>
+                  <span className="font-bold text-green-600">{bookmarkedAffairs.length}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-700">Categories</span>
+                  <span className="font-bold text-green-600">{Object.keys(categoryCounts).length}</span>
+                </div>
+                {selectedDate && (
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-gray-700">Filtered Results</span>
+                    <span className="font-bold text-green-600">{filteredAffairs.length}</span>
+                  </div>
+                )}
               </div>
-              
-              <ul className="space-y-3">
-                {studyTips.map((tip, index) => (
-                  <li key={index} className="flex items-start">
-                    <FaClipboardList className="text-amber-500 mt-1 mr-2 flex-shrink-0" />
-                    <span className="text-sm text-gray-700">{tip}</span>
-                  </li>
-                ))}
-              </ul>
             </div>
           </div>
 

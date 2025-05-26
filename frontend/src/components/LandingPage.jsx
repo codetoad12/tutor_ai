@@ -23,20 +23,6 @@ const FeatureCard = ({ title, description, icon, path, color }) => {
 const LandingPage = () => {
   const features = [
     {
-      title: 'Daily Brief',
-      description: 'Get your daily dose of current affairs carefully curated for UPSC aspirants',
-      icon: <FaNewspaper className="text-2xl" />,
-      path: '/daily-brief',
-      color: 'bg-blue-500'
-    },
-    {
-      title: 'Latest News',
-      description: 'Stay updated with the latest news and events from around the world',
-      icon: <FaBook className="text-2xl" />,
-      path: '/news',
-      color: 'bg-green-500'
-    },
-    {
       title: 'Current Affairs',
       description: 'Explore a comprehensive collection of current affairs for your UPSC preparation',
       icon: <FaChartLine className="text-2xl" />,
@@ -69,7 +55,7 @@ const LandingPage = () => {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {features.map((feature, index) => (
             <FeatureCard key={index} {...feature} />
           ))}
