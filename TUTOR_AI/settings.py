@@ -71,6 +71,7 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'base.middleware.TokenCounterMiddleware',  # Add token counter middleware
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
@@ -201,6 +202,14 @@ SIMPLE_JWT = {
 
     'JTI_CLAIM': 'jti',
 }
+
+# Token Counter Middleware Settings
+STORE_TOKEN_USAGE = True  # Set to False to disable database storage
+TOKEN_USAGE_LOG_LEVEL = 'INFO'  # Log level for token usage logging
+
+# API Keys for token counting
+GOOGLE_API_KEY = os.getenv('GOOGLE_API_KEY', '')
+GEMINI_API_KEY = os.getenv('GEMINI_API_KEY', GOOGLE_API_KEY)  # Fallback to GOOGLE_API_KEY
 
 # Gemini API Configuration
 GEMINI_API_KEY = os.getenv('GEMINI_API_KEY', 'your-api-key-here')  # Get from environment variable

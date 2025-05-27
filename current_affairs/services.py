@@ -1,5 +1,6 @@
 from typing import List, Dict
 from base.handlers.gemini_handler import GeminiHandler
+from base.utils.token_counter import TokenUsageCalculator, count_tokens_gemini
 import logging
 import re
 
@@ -47,7 +48,7 @@ class CurrentAffairsService:
                 - DO NOT include any articles with an importance rating of 1
                 - BE STRICT — only retain what has **clear, direct value for UPSC**
                 - Maintain academic tone
-                - Place all questions only under “POTENTIAL QUESTIONS”
+                - Place all questions only under "POTENTIAL QUESTIONS"
                 - Do not skip any fields for included articles
 
                 ---
@@ -306,12 +307,13 @@ class CurrentAffairsService:
         # Default to None if no clear pattern
         return None
     
-    def summarize_news(self, articles: List[Dict]) -> Dict:
+    def summarize_news(self, articles: List[Dict], request=None) -> Dict:
         """
         Summarize news articles using Gemini, with importance ratings for each article.
         
         Args:
             articles (List[Dict]): List of article dictionaries with title and summary
+            request: Django request object for token tracking (optional)
             
         Returns:
             Dict: Structured analysis with importance ratings and key points for each article,
@@ -320,6 +322,10 @@ class CurrentAffairsService:
         try:
             # Generate the prompt
             prompt = self._get_summary_prompt(articles)
+            
+            # Count input tokens using proper tokenizer
+            input_tokens = count_tokens_gemini(prompt, model="gemini-1.5-flash")
+            logger.info(f"Input tokens for news summarization: {input_tokens}")
             
             # Get response from Gemini
             response = self.gemini.generate_response(
@@ -334,8 +340,30 @@ class CurrentAffairsService:
                     'error': response['error']
                 }
             
+            # Count output tokens
+            output_tokens = count_tokens_gemini(response['response'], model="gemini-1.5-flash")
+            logger.info(f"Output tokens for news summarization: {output_tokens}")
+            
+            # Track token usage if request is provided
+            if request:
+                TokenUsageCalculator.track_api_call(
+                    request=request,
+                    prompt=prompt,
+                    response=response['response'],
+                    api_type="gemini",
+                    model="gemini-1.5-flash"
+                )
+            
             # Parse the response
             analysis = self._parse_summary_response(response['response'])
+            
+            # Add token usage info to the response
+            analysis['token_usage'] = {
+                'input_tokens': input_tokens,
+                'output_tokens': output_tokens,
+                'total_tokens': input_tokens + output_tokens,
+                'model': 'gemini-1.5-flash'
+            }
             
             return {
                 'success': True,

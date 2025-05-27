@@ -107,13 +107,20 @@ class NewsSummarizationAPIView(APIView):
                 )
 
             service = CurrentAffairsService()
-            result = service.summarize_news(news_articles)
+            # Pass the request object for token tracking
+            result = service.summarize_news(news_articles, request=request)
             
             logger.info(f"News summarization result: success={result['success']}")
             if result['success']:
                 logger.info(f"Analysis keys: {result['analysis'].keys()}")
                 logger.info(f"First article analysis (if any): {result['analysis'].get('article_analyses', [])[0] if result['analysis'].get('article_analyses') else 'No articles'}")
-                return Response(result['analysis'], status=status.HTTP_200_OK)
+                
+                # Include token usage information in the response
+                response_data = result['analysis']
+                if 'token_usage' in result['analysis']:
+                    logger.info(f"Token usage: {result['analysis']['token_usage']}")
+                
+                return Response(response_data, status=status.HTTP_200_OK)
             else:
                 logger.error(f"News summarization error: {result.get('error', 'Unknown error')}")
                 return Response(
