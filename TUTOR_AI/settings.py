@@ -49,6 +49,8 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'rest_framework_simplejwt',
     'corsheaders',
+    'django_celery_beat',
+    'django_celery_results',
     
     # Local apps
     'chat.apps.ChatConfig',
@@ -237,3 +239,44 @@ CORS_EXPOSE_HEADERS = [
     'content-type',
     'x-content-type-options',
 ]
+
+# Celery Configuration
+# Use Redis if available, otherwise fall back to database
+REDIS_URL = os.getenv('REDIS_URL', None)
+
+if REDIS_URL:
+    # Redis configuration (preferred for production)
+    CELERY_BROKER_URL = REDIS_URL
+    CELERY_RESULT_BACKEND = REDIS_URL
+else:
+    # Memory broker for development (simplest option, no persistence)
+    CELERY_BROKER_URL = 'memory://'
+    CELERY_RESULT_BACKEND = 'django-db'
+    # For development, we'll run tasks synchronously when no Redis is available
+    CELERY_TASK_ALWAYS_EAGER = True
+    CELERY_TASK_EAGER_PROPAGATES = True
+
+# Celery Beat Configuration
+CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
+
+# Celery Results Configuration  
+CELERY_CACHE_BACKEND = 'django-cache'
+
+# Celery Task Configuration
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = TIME_ZONE
+CELERY_ENABLE_UTC = True
+
+# Redis Configuration for Caching (optional but recommended)
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+        'LOCATION': os.getenv('REDIS_URL', 'redis://localhost:6379/1'),
+    }
+}
+
+# Session Configuration (optional - use Redis for sessions)
+SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
+SESSION_CACHE_ALIAS = 'default'
