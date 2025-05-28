@@ -92,7 +92,7 @@ class TokenCounterMiddleware(MiddlewareMixin):
                 'total_cost': request.token_usage.get('total_cost', 0),
                 'api_calls': request.token_usage['api_calls']
             })
-        
+            print(response['X-Token-Usage'])
         return response
     
     def _add_token_usage(self, request, input_tokens: int, output_tokens: int, api_type: str):

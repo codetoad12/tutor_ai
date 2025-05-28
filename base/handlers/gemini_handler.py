@@ -2,6 +2,7 @@ import google.generativeai as genai
 from typing import Dict, Optional
 import logging
 from django.conf import settings
+from base.utils.token_counter import TokenUsageCalculator
 
 logger = logging.getLogger(__name__)
 
@@ -18,7 +19,8 @@ class GeminiHandler:
         max_tokens: int = 1000,
         temperature: float = 0.7,
         top_p: float = 0.8,
-        top_k: int = 40
+        top_k: int = 40,
+        request=None
     ) -> Dict:
         """
         Generate a response from Gemini.
@@ -29,6 +31,7 @@ class GeminiHandler:
             temperature (float): Controls randomness (0.0 to 1.0)
             top_p (float): Nucleus sampling parameter
             top_k (int): Top-k sampling parameter
+            request: Django request object for token tracking
             
         Returns:
             Dict: Response from the model with success status
@@ -55,6 +58,19 @@ class GeminiHandler:
                             top_k=top_k
                         )
                     )
+                    
+                    # Track token usage if request is provided
+                    if request and response.text:
+                        try:
+                            TokenUsageCalculator.track_api_call(
+                                request=request,
+                                prompt=structured_prompt,
+                                response=response.text,
+                                api_type="gemini",
+                                model="gemini-1.5-flash"
+                            )
+                        except Exception as e:
+                            logger.warning(f"Failed to track token usage: {str(e)}")
                     
                     return {
                         'success': True,

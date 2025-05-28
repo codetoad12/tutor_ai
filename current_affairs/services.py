@@ -331,7 +331,8 @@ class CurrentAffairsService:
             response = self.gemini.generate_response(
                 prompt=prompt,
                 max_tokens=1500,  # Increased token limit for detailed article analysis
-                temperature=0.7
+                temperature=0.7,
+                request=request  # Pass request for automatic token tracking
             )
             
             if not response['success']:

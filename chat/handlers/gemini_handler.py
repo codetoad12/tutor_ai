@@ -4,6 +4,7 @@ from typing import Dict, List, Optional
 import logging
 import time
 from google.api_core.exceptions import ResourceExhausted, TooManyRequests
+from base.utils.token_counter import TokenUsageCalculator
 
 logger = logging.getLogger(__name__)
 
@@ -15,7 +16,22 @@ class GeminiHandler:
         
         configure(api_key=self.api_key)
         
-        # Initialize models in order of preference
+        # System instruction for UPSC tutor (this won't count as input tokens)
+        self.system_instruction = """You are an expert UPSC (Union Public Service Commission) exam mentor and tutor. Your role is to assist students in understanding complex topics, clearing doubts, and guiding them through their preparation journey for Prelims, Mains, and Interview stages.
+
+Your responses should always be:
+- **Factually accurate**, based on verified and reliable sources like NCERTs, official government publications, standard textbooks, and UPSC previous year papers.
+- **Clear and concise**, using easy-to-understand language suitable for students from diverse educational backgrounds.
+- **Structured**, with use of bullet points, headings, or short paragraphs to improve readability.
+- **Helpful**, offering real context or examples relevant to India and the UPSC syllabus (e.g., Constitution, Economy, History, Polity, Environment, Ethics).
+
+⚠️ DO NOT provide information unless you are confident in its accuracy. If you're unsure, say: "I'm not confident in the answer to that. Please consult an official UPSC source or subject matter expert."
+
+You can explain in English, Hindi, or Hinglish depending on the student's language preference. Avoid hallucinations, assumptions, or fabricated examples.
+
+You are not a general-purpose assistant. Focus ONLY on UPSC syllabus-related questions, exam tips, or study strategies."""
+        
+        # Initialize models with system instruction
         self.models = {
             "flash": {
                 "name": "gemini-1.5-flash", 
@@ -33,8 +49,11 @@ class GeminiHandler:
         for model_key in self.models:
             try:
                 model_info = self.models[model_key]
-                model_info["model"] = GenerativeModel(model_info["name"])
-                logger.info(f"Successfully initialized model: {model_info['name']}")
+                model_info["model"] = GenerativeModel(
+                    model_name=model_info["name"],
+                    system_instruction=self.system_instruction  # Set system instruction
+                )
+                logger.info(f"Successfully initialized model: {model_info['name']} with system instruction")
             except Exception as e:
                 logger.warning(f"Could not initialize model {model_info['name']}: {str(e)}")
                 
@@ -48,21 +67,34 @@ class GeminiHandler:
         self.current_model_key = next((k for k, v in self.models.items() if v["name"] == available_models[0]["name"]), "flash")
         logger.info(f"Using {self.models[self.current_model_key]['name']} as the initial model")
         
-        # Base prompt defining the AI's role and purpose
-        self.base_prompt = """You are an expert UPSC (Union Public Service Commission) exam mentor and tutor. Your role is to assist students in understanding complex topics, clearing doubts, and guiding them through their preparation journey for Prelims, Mains, and Interview stages.
-                                Your responses should always be:
-                                - **Factually accurate**, based on verified and reliable sources like NCERTs, official government publications, standard textbooks, and UPSC previous year papers.
-                                - **Clear and concise**, using easy-to-understand language suitable for students from diverse educational backgrounds.
-                                - **Structured**, with use of bullet points, headings, or short paragraphs to improve readability.
-                                - **Helpful**, offering real context or examples relevant to India and the UPSC syllabus (e.g., Constitution, Economy, History, Polity, Environment, Ethics).
+        # Chat sessions for maintaining context (per session)
+        self.chat_sessions = {}
 
-                                ⚠️ DO NOT provide information unless you are confident in its accuracy. If you're unsure, say: "I'm not confident in the answer to that. Please consult an official UPSC source or subject matter expert."
+    def get_or_create_chat_session(self, session_id=None):
+        """
+        Get or create a chat session for maintaining conversation context.
+        
+        Args:
+            session_id: Unique identifier for the chat session
+            
+        Returns:
+            Chat session object
+        """
+        if session_id is None:
+            session_id = "default"
+            
+        if session_id not in self.chat_sessions:
+            current_model = self.models[self.current_model_key]["model"]
+            if current_model:
+                self.chat_sessions[session_id] = current_model.start_chat(history=[])
+                logger.info(f"Created new chat session: {session_id}")
+            else:
+                logger.error("Cannot create chat session: no model available")
+                return None
+                
+        return self.chat_sessions[session_id]
 
-                                You can explain in English, Hindi, or Hinglish depending on the student's language preference. Avoid hallucinations, assumptions, or fabricated examples.
-
-                                You are not a general-purpose assistant. Focus ONLY on UPSC syllabus-related questions, exam tips, or study strategies."""
-
-    def generate_response(self, message, context=None, retry_count=0):
+    def generate_response(self, message, context=None, retry_count=0, request=None, session_id=None):
         """
         Generate a response using Gemini models with fallback mechanisms.
         
@@ -70,6 +102,8 @@ class GeminiHandler:
             message (str): The user's message
             context (dict, optional): Additional context for the conversation
             retry_count (int): Number of retries attempted
+            request: Django request object for token tracking
+            session_id: Chat session ID for maintaining conversation context
             
         Returns:
             dict: Response containing the generated text and metadata
@@ -95,7 +129,7 @@ class GeminiHandler:
             for model_key, model_info in self.models.items():
                 if model_info["model"] is not None:
                     self.current_model_key = model_key
-                    return self.generate_response(message, context, retry_count)
+                    return self.generate_response(message, context, retry_count, request, session_id)
             
             # No models available
             return {
@@ -105,11 +139,30 @@ class GeminiHandler:
             }
         
         try:
-            # Prepare the prompt with context if available
-            prompt = self._prepare_prompt(message, context)
+            # Get or create chat session for context
+            chat_session = self.get_or_create_chat_session(session_id)
             
-            # Generate response
-            response = current_model.generate_content(prompt)
+            if chat_session is None:
+                # Fallback to direct model call without session
+                prompt = self._prepare_minimal_prompt(message, context)
+                response = current_model.generate_content(prompt)
+            else:
+                # Use chat session (maintains context automatically)
+                prompt = self._prepare_minimal_prompt(message, context)
+                response = chat_session.send_message(prompt)
+            
+            # Track token usage if request is provided
+            if request and response.text:
+                try:
+                    TokenUsageCalculator.track_api_call(
+                        request=request,
+                        prompt=prompt,  # This is now much shorter!
+                        response=response.text,
+                        api_type="gemini",
+                        model=model_name
+                    )
+                except Exception as e:
+                    logger.warning(f"Failed to track token usage: {str(e)}")
             
             # Process and format the response
             formatted_response = self._format_response(response, model_name)
@@ -126,13 +179,13 @@ class GeminiHandler:
                 self.current_model_key = alternative_model_key
                 # Small delay before retrying
                 time.sleep(1)
-                return self.generate_response(message, context, retry_count + 1)
+                return self.generate_response(message, context, retry_count + 1, request, session_id)
             
             # If no alternative model or already tried all, wait and retry
             wait_time = min(2 ** retry_count, 10)  # Exponential backoff up to 10 seconds
             logger.info(f"No alternative model available, waiting {wait_time}s before retry")
             time.sleep(wait_time)
-            return self.generate_response(message, context, retry_count + 1)
+            return self.generate_response(message, context, retry_count + 1, request, session_id)
             
         except Exception as e:
             logger.error(f"Error generating response with {model_name}: {str(e)}")
@@ -186,9 +239,9 @@ class GeminiHandler:
         # If current model not found or no alternative, return first model
         return model_keys[0] if model_keys else None
 
-    def _prepare_prompt(self, message, context=None):
+    def _prepare_minimal_prompt(self, message, context=None):
         """
-        Prepare the prompt with context and message.
+        Prepare the minimal prompt with message.
         
         Args:
             message (str): The user's message
@@ -197,36 +250,7 @@ class GeminiHandler:
         Returns:
             str: Formatted prompt
         """
-        # Base prompt defining the AI's role and purpose
-        base_prompt = """You are an expert UPSC (Union Public Service Commission) exam mentor and tutor. Your role is to assist students in understanding complex topics, clearing doubts, and guiding them through their preparation journey for Prelims, Mains, and Interview stages.
-
-Your responses should always be:
-- **Factually accurate**, based on verified and reliable sources like NCERTs, official government publications, standard textbooks, and UPSC previous year papers.
-- **Clear and concise**, using easy-to-understand language suitable for students from diverse educational backgrounds.
-- **Structured**, with use of bullet points, headings, or short paragraphs to improve readability.
-- **Helpful**, offering real context or examples relevant to India and the UPSC syllabus (e.g., Constitution, Economy, History, Polity, Environment, Ethics).
-
-⚠️ DO NOT provide information unless you are confident in its accuracy. If you're unsure, say: "I'm not confident in the answer to that. Please consult an official UPSC source or subject matter expert."
-
-You can explain in English, Hindi, or Hinglish depending on the student's language preference. Avoid hallucinations, assumptions, or fabricated examples.
-
-You are not a general-purpose assistant. Focus ONLY on UPSC syllabus-related questions, exam tips, or study strategies.
-
-Current conversation context:"""
-
-        prompt = base_prompt
-        
-        if context:
-            if 'subject' in context:
-                prompt += f"\nThe subject being discussed is {context['subject']}."
-            if 'previous_messages' in context:
-                prompt += "\nPrevious context:\n"
-                for msg in context['previous_messages'][-3:]:  # Include last 3 messages for context
-                    role = msg.get('role', 'user')
-                    content = msg.get('content', '')
-                    prompt += f"{role}: {content}\n"
-        
-        prompt += f"\nStudent: {message}\nTutor:"
+        prompt = message
         
         return prompt
 
@@ -258,17 +282,46 @@ Current conversation context:"""
                 "metadata": {"model": model_name}
             }
 
-    def reset_chat(self):
-        """Reset the chat history."""
-        current_model = self.models[self.current_model_key]["model"]
+    def reset_chat(self, session_id=None):
+        """
+        Reset the chat history for a specific session or all sessions.
+        
+        Args:
+            session_id: Specific session to reset, or None to reset all
+        """
         try:
-            if current_model:
-                chat = current_model.start_chat(history=[])
-                logger.info("Chat history reset successfully")
+            if session_id is None:
+                # Reset all sessions
+                self.chat_sessions.clear()
+                logger.info("All chat sessions reset successfully")
                 return True
             else:
-                logger.error("Cannot reset chat: current model is not initialized")
-                return False
+                # Reset specific session
+                if session_id in self.chat_sessions:
+                    del self.chat_sessions[session_id]
+                    logger.info(f"Chat session {session_id} reset successfully")
+                    return True
+                else:
+                    logger.warning(f"Chat session {session_id} not found")
+                    return False
         except Exception as e:
             logger.error(f"Error resetting chat: {str(e)}")
-            return False 
+            return False
+    
+    def clear_session(self, session_id):
+        """
+        Clear a specific chat session.
+        
+        Args:
+            session_id: Session ID to clear
+        """
+        return self.reset_chat(session_id)
+    
+    def get_active_sessions(self):
+        """
+        Get list of active session IDs.
+        
+        Returns:
+            List of active session IDs
+        """
+        return list(self.chat_sessions.keys()) 
