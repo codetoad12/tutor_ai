@@ -26,5 +26,6 @@ urlpatterns = [
     path('api/auth/', include('users.urls')),
     path('api/chat/', include('chat.urls')),
     path('api/progress-tracker/', include('progress_tracker.urls')),
+    path('api/base/', include('base.urls')),  # Add base URLs for token usage
     path('api/health/', views.health_check, name='health_check'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

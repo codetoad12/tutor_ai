@@ -25,4 +25,10 @@ class CurrentAffairCategory(Enum):
     SCIENCE_TECHNOLOGY = "Science & Technology"
     SOCIAL_ISSUES = "Social Issues"
     SECURITY = "Security"
-    MISCELLANEOUS = "Miscellaneous" 
+    MISCELLANEOUS = "Miscellaneous"
+
+class APIType(Enum):
+    GEMINI = "gemini"
+    OPENAI = "openai"
+    CLAUDE = "claude"
+    OTHER = "other" 

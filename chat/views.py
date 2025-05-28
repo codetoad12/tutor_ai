@@ -115,7 +115,9 @@ class MessageListCreateView(APIView):
                 # Generate response using Gemini
                 ai_response = gemini_handler.generate_response(
                     message=message.content,
-                    context=context
+                    context=context,
+                    request=request,  # Pass request for token tracking
+                    session_id=str(session.id)  # Pass session ID for context management
                 )
                 
                 # Create response object

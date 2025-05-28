@@ -1,76 +1,91 @@
 from typing import List, Dict
-from base.handlers.gemini_handler import GeminiHandler
+from google.generativeai import GenerativeModel, configure
+from base.utils.token_counter import TokenUsageCalculator, count_tokens_gemini
 import logging
 import re
+import os
 
 logger = logging.getLogger(__name__)
 
 class CurrentAffairsService:
     def __init__(self):
-        self.gemini = GeminiHandler()
+        # Configure Gemini API
+        api_key = os.getenv('GEMINI_API_KEY')
+        if not api_key:
+            raise ValueError("GEMINI_API_KEY environment variable is not set")
         
-    def _get_summary_prompt(self, articles: List[Dict]) -> str:
-        """Generate the prompt for news summarization tailored for UPSC relevance."""
+        configure(api_key=api_key)
+        
+        # System instruction for UPSC current affairs analysis
+        self.system_instruction = """You are an expert UPSC mentor. Your task is to analyze each news article and assess its relevance for UPSC aspirants.
+
+For EACH article, do the following:
+
+- If the article has **no meaningful UPSC relevance**, you may completely skip it.
+- Only include articles with an **importance rating of 2 or higher** (according to the rubric below).
+
+For included articles, provide the following fields:
+
+1. **IMPORTANCE**: A number from 1 to 5 indicating relevance to UPSC (see rubric)
+2. **SUMMARY**: Concise explanation, tailored to UPSC context
+3. **KEY CONCEPTS**: 2–3 core themes (e.g., Policy Reform, Internal Security)
+4. **SYLLABUS CONNECTION**: State GS paper and topic (e.g., GS-III: Internal Security)
+5. **POTENTIAL QUESTIONS**: 1–3 UPSC-style questions (based on importance)
+
+---
+
+### IMPORTANCE RATING RUBRIC (Use only numbers 1-5):
+- 5 = Major: Policy change, SC ruling, national/international treaty or event
+- 4 = Strong: Governance, economic reforms, security/international affairs
+- 3 = Moderate: Policy updates, key data, major environment/tech issues
+- 2 = Low: Minor government activities with tangential UPSC value
+- 1 = Negligible: Local news, entertainment, crime, sports — IGNORE THESE
+
+---
+
+### GUIDELINES:
+- DO NOT include any articles with an importance rating of 1
+- BE STRICT — only retain what has **clear, direct value for UPSC**
+- Maintain academic tone
+- Place all questions only under "POTENTIAL QUESTIONS"
+- Do not skip any fields for included articles
+
+---
+
+### FORMAT EXAMPLE:
+
+ARTICLE ANALYSES:
+
+HEADLINE: [Exact title]
+IMPORTANCE: [2–5]
+SUMMARY: [Concise, UPSC-focused]
+KEY CONCEPTS: [Concept 1, Concept 2]
+SYLLABUS CONNECTION: [GS Paper and topic]
+POTENTIAL QUESTIONS:
+1. [Q1]
+2. [Q2]
+
+[Repeat for each included article...]"""
+        
+        # Initialize the model with system instruction
+        try:
+            self.model = GenerativeModel(
+                model_name="gemini-1.5-flash",
+                system_instruction=self.system_instruction
+            )
+            logger.info("Successfully initialized Gemini model with UPSC system instruction")
+        except Exception as e:
+            logger.error(f"Failed to initialize Gemini model: {str(e)}")
+            raise
+        
+    def _prepare_articles_input(self, articles: List[Dict]) -> str:
+        """Prepare the articles input text without the system prompt."""
         input_text = "\n\n".join([
             f"Headline: {article['title']}\nSummary: {article['summary']}\nSource: {article.get('source', 'Unknown')}\nURL: {article.get('link', '')}"
             for article in articles
         ])
-
-        return f"""
-                You are an expert UPSC mentor. Your task is to analyze each news article and assess its relevance for UPSC aspirants.
-
-                For EACH article, do the following:
-
-                - If the article has **no meaningful UPSC relevance**, you may completely skip it.
-                - Only include articles with an **importance rating of 2 or higher** (according to the rubric below).
-
-                For included articles, provide the following fields:
-
-                1. **IMPORTANCE**: A number from 1 to 5 indicating relevance to UPSC (see rubric)
-                2. **SUMMARY**: Concise explanation, tailored to UPSC context
-                3. **KEY CONCEPTS**: 2–3 core themes (e.g., Policy Reform, Internal Security)
-                4. **SYLLABUS CONNECTION**: State GS paper and topic (e.g., GS-III: Internal Security)
-                5. **POTENTIAL QUESTIONS**: 1–3 UPSC-style questions (based on importance)
-
-                ---
-
-                ### IMPORTANCE RATING RUBRIC (Use only numbers 1-5):
-                - 5 = Major: Policy change, SC ruling, national/international treaty or event
-                - 4 = Strong: Governance, economic reforms, security/international affairs
-                - 3 = Moderate: Policy updates, key data, major environment/tech issues
-                - 2 = Low: Minor government activities with tangential UPSC value
-                - 1 = Negligible: Local news, entertainment, crime, sports — IGNORE THESE
-
-                ---
-
-                ### GUIDELINES:
-                - DO NOT include any articles with an importance rating of 1
-                - BE STRICT — only retain what has **clear, direct value for UPSC**
-                - Maintain academic tone
-                - Place all questions only under “POTENTIAL QUESTIONS”
-                - Do not skip any fields for included articles
-
-                ---
-
-                ### FORMAT EXAMPLE:
-
-                ARTICLE ANALYSES:
-
-                HEADLINE: [Exact title]
-                IMPORTANCE: [2–5]
-                SUMMARY: [Concise, UPSC-focused]
-                KEY CONCEPTS: [Concept 1, Concept 2]
-                SYLLABUS CONNECTION: [GS Paper and topic]
-                POTENTIAL QUESTIONS:
-                1. [Q1]
-                2. [Q2]
-
-                [Repeat for each included article...]
-
-                ARTICLES TO ANALYZE:
-
-                {input_text}
-                """
+        
+        return f"ARTICLES TO ANALYZE:\n\n{input_text}"
     
     def _parse_summary_response(self, response_text: str) -> Dict:
         """Parse the raw response into structured format."""
@@ -306,36 +321,59 @@ class CurrentAffairsService:
         # Default to None if no clear pattern
         return None
     
-    def summarize_news(self, articles: List[Dict]) -> Dict:
+    def summarize_news(self, articles: List[Dict], request=None) -> Dict:
         """
-        Summarize news articles using Gemini, with importance ratings for each article.
+        Summarize news articles using Gemini with system instructions, with importance ratings for each article.
         
         Args:
             articles (List[Dict]): List of article dictionaries with title and summary
+            request: Django request object for token tracking (optional)
             
         Returns:
             Dict: Structured analysis with importance ratings and key points for each article,
                   or error message
         """
         try:
-            # Generate the prompt
-            prompt = self._get_summary_prompt(articles)
+            # Prepare the minimal input (just the articles data)
+            articles_input = self._prepare_articles_input(articles)
             
-            # Get response from Gemini
-            response = self.gemini.generate_response(
-                prompt=prompt,
-                max_tokens=1500,  # Increased token limit for detailed article analysis
-                temperature=0.7
-            )
+            # Count input tokens using proper tokenizer
+            input_tokens = count_tokens_gemini(articles_input, model="gemini-1.5-flash")
+            logger.info(f"Input tokens for news summarization: {input_tokens}")
             
-            if not response['success']:
+            # Get response from Gemini using the model with system instruction
+            response = self.model.generate_content(articles_input)
+            
+            if not response.text:
                 return {
                     'success': False,
-                    'error': response['error']
+                    'error': 'No response generated from Gemini'
                 }
             
+            # Count output tokens
+            output_tokens = count_tokens_gemini(response.text, model="gemini-1.5-flash")
+            logger.info(f"Output tokens for news summarization: {output_tokens}")
+            
+            # Track token usage if request is provided
+            if request:
+                TokenUsageCalculator.track_api_call(
+                    request=request,
+                    prompt=articles_input,  # Much shorter now!
+                    response=response.text,
+                    api_type="gemini",
+                    model="gemini-1.5-flash"
+                )
+            
             # Parse the response
-            analysis = self._parse_summary_response(response['response'])
+            analysis = self._parse_summary_response(response.text)
+            
+            # Add token usage info to the response
+            analysis['token_usage'] = {
+                'input_tokens': input_tokens,
+                'output_tokens': output_tokens,
+                'total_tokens': input_tokens + output_tokens,
+                'model': 'gemini-1.5-flash'
+            }
             
             return {
                 'success': True,
