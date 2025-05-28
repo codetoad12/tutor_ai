@@ -11,4 +11,14 @@ celery>=5.3.0
 redis>=4.0.0
 django-celery-beat>=2.5.0
 django-celery-results>=2.5.0
-tiktoken>=0.5.0 
+tiktoken>=0.5.0
+djangorestframework-simplejwt>=5.3.0
+
+# Production dependencies
+psycopg2-binary>=2.9.0  # PostgreSQL adapter
+whitenoise>=6.5.0       # Static file serving
+gunicorn>=21.0.0        # WSGI server for production
+django-redis>=5.3.0     # Redis cache backend
+
+# Optional production dependencies
+# sentry-sdk>=1.32.0    # Error tracking (uncomment if using Sentry) 
