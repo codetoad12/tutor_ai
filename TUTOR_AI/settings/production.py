@@ -4,6 +4,7 @@ This file contains settings specific to production environment.
 """
 
 from .base import *
+import os
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
@@ -11,20 +12,59 @@ DEBUG = False
 # Production hosts - should be set via environment variable
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '').split(',') if os.getenv('ALLOWED_HOSTS') else []
 
-# Production Database - PostgreSQL recommended
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.getenv('DB_NAME', 'tutor_ai_prod'),
-        'USER': os.getenv('DB_USER', 'postgres'),
-        'PASSWORD': os.getenv('DB_PASSWORD', ''),
-        'HOST': os.getenv('DB_HOST', 'localhost'),
-        'PORT': os.getenv('DB_PORT', '5432'),
-        'OPTIONS': {
-            'sslmode': 'require',
-        },
+# AWS Secrets Manager Integration
+USE_AWS_SECRETS = os.getenv('USE_AWS_SECRETS', 'true').lower() == 'true'
+AWS_REGION = os.getenv('AWS_REGION', 'us-east-1')
+
+if USE_AWS_SECRETS:
+    try:
+        from base.utils.aws_secrets import get_database_config, get_api_keys
+        
+        # Get database configuration from Secrets Manager
+        db_config = get_database_config(
+            secret_name=os.getenv('DB_SECRET_NAME', 'tutor-ai/database'),
+            region_name=AWS_REGION
+        )
+        
+        # Get API keys from Secrets Manager
+        api_keys = get_api_keys(
+            secret_name=os.getenv('API_KEYS_SECRET_NAME', 'tutor-ai/api-keys'),
+            region_name=AWS_REGION
+        )
+        
+        # Production Database - Using AWS Secrets Manager
+        DATABASES = {
+            'default': db_config
+        }
+        
+        # API Keys from Secrets Manager
+        GEMINI_API_KEY = api_keys.get('GEMINI_API_KEY', os.getenv('GEMINI_API_KEY', ''))
+        GOOGLE_API_KEY = api_keys.get('GOOGLE_API_KEY', os.getenv('GOOGLE_API_KEY', ''))
+        
+    except ImportError as e:
+        print(f"Warning: AWS Secrets Manager integration failed: {e}")
+        print("Falling back to environment variables...")
+        USE_AWS_SECRETS = False
+
+if not USE_AWS_SECRETS:
+    # Fallback: Production Database - Using environment variables
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': os.getenv('DB_NAME', 'tutor_ai_prod'),
+            'USER': os.getenv('DB_USER', 'postgres'),
+            'PASSWORD': os.getenv('DB_PASSWORD', ''),
+            'HOST': os.getenv('DB_HOST', 'localhost'),
+            'PORT': os.getenv('DB_PORT', '5432'),
+            'OPTIONS': {
+                'sslmode': 'require',
+            },
+        }
     }
-}
+    
+    # API Keys from environment variables
+    GEMINI_API_KEY = os.getenv('GEMINI_API_KEY', '')
+    GOOGLE_API_KEY = os.getenv('GOOGLE_API_KEY', '')
 
 # Static files for production
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
@@ -72,6 +112,10 @@ SESSION_CACHE_ALIAS = 'default'
 SESSION_COOKIE_AGE = 86400  # 24 hours
 
 # Production logging
+# Ensure logs directory exists
+LOGS_DIR = os.path.join(BASE_DIR, 'logs')
+os.makedirs(LOGS_DIR, exist_ok=True)
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -89,17 +133,17 @@ LOGGING = {
         'file': {
             'level': 'INFO',
             'class': 'logging.FileHandler',
-            'filename': os.path.join(BASE_DIR, 'logs', 'django.log'),
+            'filename': os.path.join(LOGS_DIR, 'django.log'),
             'formatter': 'verbose',
         },
         'console': {
-            'level': 'ERROR',
+            'level': 'INFO',
             'class': 'logging.StreamHandler',
             'formatter': 'simple',
         },
     },
     'root': {
-        'handlers': ['file', 'console'],
+        'handlers': ['console'],  # Default to console only
         'level': 'INFO',
     },
     'loggers': {
@@ -109,6 +153,11 @@ LOGGING = {
             'propagate': False,
         },
         'celery': {
+            'handlers': ['file', 'console'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'base.utils.aws_secrets': {
             'handlers': ['file', 'console'],
             'level': 'INFO',
             'propagate': False,

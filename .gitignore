@@ -87,13 +87,16 @@ var/
 *.sublime-workspace
 *.sublime-project
 
-# Environment variables
+# Environment variables - IMPORTANT: Keep these secure!
 .env
 .env.local
 .env.*.local
 .env.development
 .env.test
 .env.production
+.env.staging
+.env.production.local
+.env.staging.local
 
 # Django
 local_settings.py
@@ -126,4 +129,44 @@ Thumbs.db
 *.tmp
 *.temp
 .temp/
-.tmp/ 
+.tmp/
+
+# AWS and Deployment specific
+# Logs directory (but keep the directory structure)
+logs/*.log
+logs/*.out
+logs/*.err
+
+# AWS credentials and config (if accidentally created locally)
+.aws/
+aws-credentials.json
+aws-config.json
+
+# Deployment scripts with sensitive data
+deploy/secrets/
+deploy/*.pem
+deploy/*.key
+
+# Static files collected for production
+staticfiles/
+static_collected/
+
+# Celery beat schedule
+celerybeat-schedule
+celerybeat.pid
+
+# Test and development files
+test_*.py
+*_test.py
+test_data/
+.coverage
+.pytest_cache/
+
+# Backup files
+*.bak
+*.backup
+*.old
+
+# Local development overrides
+local_settings.py
+settings_local.py 
