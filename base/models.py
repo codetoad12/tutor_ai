@@ -11,6 +11,12 @@ class BaseModel(models.Model):
     """
     Base model with common fields for all models
     """ 
+    uuid = models.UUIDField(
+        default=uuid.uuid4, 
+        editable=False, 
+        unique=True,
+        help_text='Unique identifier for this record'
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     created_by = models.ForeignKey(
