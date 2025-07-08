@@ -1,3 +1,5 @@
+import API_BASE_URL from './config.js';
+
 // Debug utility for chat UI
 export function debugChatUI() {
     console.log('=== CHAT UI DEBUG ===');
@@ -26,7 +28,7 @@ export function debugChatUI() {
     console.log('User:', user);
     
     // Check API connection
-    fetch('http://localhost:8000/api/health/')
+    fetch(`${API_BASE_URL}/health/`)
         .then(response => {
             console.log('API Health Check:', response.ok ? 'OK' : 'Failed');
             return response.json();

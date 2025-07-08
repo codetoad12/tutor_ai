@@ -1,6 +1,5 @@
 import axios from 'axios';
-
-const API_BASE_URL = 'http://localhost:8000/api';
+import API_BASE_URL from '../config.js';
 
 export const currentAffairsService = {
     // Get all current affairs with optional filters

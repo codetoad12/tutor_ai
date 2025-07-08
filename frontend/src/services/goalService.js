@@ -1,6 +1,5 @@
 import { authService } from './auth.js';
-
-const API_BASE_URL = 'http://localhost:8000/api';
+import API_BASE_URL from '../config.js';
 
 class GoalService {
     constructor() {

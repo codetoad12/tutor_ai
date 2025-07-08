@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import API_BASE_URL from '../config';
 import { authService } from '../services/auth';
 import NewsCard from './NewsCard';
 import { FaBookmark, FaRegBookmark, FaChartLine, FaQuestionCircle, FaSearch, FaCalendarAlt, FaClock, FaGraduationCap, FaLightbulb, FaExternalLinkAlt, FaClipboardList } from 'react-icons/fa';
@@ -63,7 +64,7 @@ function MainContent() {
         }
 
         const headers = authService.getAuthHeaders();
-        const response = await fetch('http://localhost:8000/api/current-affairs/', {
+        const response = await fetch(`${API_BASE_URL}/current-affairs/`, {
           headers: headers,
         });
 
