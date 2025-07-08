@@ -1,9 +1,11 @@
+import API_BASE_URL from './config.js';
+
 // Script to check if the Django server is running
 async function checkDjangoServer() {
     console.log('Checking Django server...');
     
     try {
-        const response = await fetch('http://localhost:8000/api/health/');
+        const response = await fetch(`${API_BASE_URL}/health/`);
         console.log('Django server response status:', response.status);
         
         if (response.ok) {

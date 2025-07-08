@@ -1,5 +1,7 @@
 // Auth service to handle user authentication
-const API_URL = 'http://localhost:8000/api';
+import API_BASE_URL from '../config.js';
+
+const API_URL = API_BASE_URL;
 
 class AuthService {
     constructor() {
