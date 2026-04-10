@@ -1,6 +1,9 @@
 # TUTOR_AI
 
 A Django-based AI tutoring platform for UPSC aspirants and general purpose tutoring.
+AI tutoring platform built with Django and Gemini API. Students can chat with an AI tutor, 
+get content summarized, track goal-based progress, and practice UPSC questions. 
+Background jobs handled via Celery for async processing.
 
 ## Features
 
